@@ -16,6 +16,7 @@
 #include "state_panel/state_panel.hpp"
 #include "ui_setting_panel/ui_setting_panel.hpp"
 #include "call_out_box/call_out_box.hpp"
+#include "coeff/CoeffTable.h"
 
 namespace zlPanel {
     class MainPanel final : public juce::Component,
@@ -53,6 +54,8 @@ namespace zlPanel {
         DynamicBox dynamicBox;
         CollisionBox collisionBox;
         GeneralBox generalBox;
+
+        CoeffTable coeffTable;
 
         zlInterface::TooltipLookAndFeel tooltipLAF;
         zlInterface::TooltipWindow tooltipWindow;

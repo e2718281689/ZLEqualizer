@@ -36,6 +36,8 @@ namespace zlPanel {
         addChildComponent(collisionBox);
         addChildComponent(generalBox);
 
+        addAndMakeVisible(coeffTable);
+
         tooltipWindow.setLookAndFeel(&tooltipLAF);
         tooltipWindow.setOpaque(false);
         tooltipWindow.setBufferedToImage(true);
@@ -104,10 +106,16 @@ namespace zlPanel {
             }
         }
 
+        //
+
         uiSettingPanel.setBounds(getLocalBounds());
 
         const auto controlBound = bound.removeFromBottom(juce::roundToInt(fontSize * 7.348942487176095f));
         controlPanel.setBounds(controlBound);
+        coeffTable.setBounds(controlBound.getX()+controlBound.getWidth()*0.55,
+                                controlBound.getY(),
+                                controlBound.getWidth(),
+                                controlBound.getHeight());
 
         const auto scaleBound = bound.removeFromRight(juce::roundToInt(uiBase.getFontSize() * 4.2f));
         curvePanel.setBounds(bound.toNearestInt());
