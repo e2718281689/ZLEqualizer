@@ -27,6 +27,8 @@ namespace zlPanel {
 
         void resetSetting();
 
+        void exportCoeff();
+
         void resized() override;
 
         void mouseDown(const juce::MouseEvent &event) override;
@@ -46,7 +48,7 @@ namespace zlPanel {
         juce::Label sliderDoubleClickLabel;
         zlInterface::CompactCombobox sliderDoubleClickBox;
 
-        juce::Label importLabel, exportLabel;
+        juce::Label importLabel, exportLabel ,exportCoeffLabel;
         std::unique_ptr<juce::FileChooser> myChooser;
         inline auto static const settingDirectory =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)

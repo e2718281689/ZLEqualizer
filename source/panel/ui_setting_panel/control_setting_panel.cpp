@@ -64,11 +64,18 @@ namespace zlPanel {
         importLabel.setLookAndFeel(&nameLAF);
         importLabel.addMouseListener(this, false);
         addAndMakeVisible(importLabel);
+
         exportLabel.setText("Export Controls", juce::dontSendNotification);
         exportLabel.setJustificationType(juce::Justification::centred);
         exportLabel.setLookAndFeel(&nameLAF);
         exportLabel.addMouseListener(this, false);
         addAndMakeVisible(exportLabel);
+
+        exportCoeffLabel.setText("Export CoeffL Controls", juce::dontSendNotification);
+        exportCoeffLabel.setJustificationType(juce::Justification::centred);
+        exportCoeffLabel.setLookAndFeel(&nameLAF);
+        exportCoeffLabel.addMouseListener(this, false);
+        addAndMakeVisible(exportCoeffLabel);
     }
 
     ControlSettingPanel::~ControlSettingPanel() = default;
@@ -137,12 +144,18 @@ namespace zlPanel {
             localBound.removeFromLeft(bound.getWidth() * .05f);
             const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.425f;
             sliderDoubleClickBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-        } {
+        }
+        {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .10f);
             exportLabel.setBounds(localBound.toNearestInt());
+        }
+        {
+            auto secondRowBound = bound.removeFromTop(uiBase.getFontSize() * 2);
+            secondRowBound.removeFromLeft(getWidth() * 0.10f);
+            exportCoeffLabel.setBounds(secondRowBound.toNearestInt());
         }
     }
 
@@ -152,6 +165,23 @@ namespace zlPanel {
         } else if (event.originalComponent == &exportLabel) {
             exportControls();
         }
+        else if (event.originalComponent == &exportCoeffLabel) {
+            exportCoeff();
+        }
+    }
+
+    void ControlSettingPanel::exportCoeff()
+    {
+        auto& Controller = pRef.getController();
+        auto& Filters = Controller.getFilters();
+        auto& mFilter = Filters[0].getMainFilter();
+        auto& filters = mFilter.getFilters();
+        auto& mCoeff = filters[0].getmCoeff();
+
+        auto& xxx = Controller.getfilterLRIndices();
+        const auto &indices{xxx[0]};
+
+
     }
 
     void ControlSettingPanel::importControls() {
