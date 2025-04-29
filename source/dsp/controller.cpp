@@ -415,6 +415,7 @@ namespace zlDSP {
             if (currentIsBypass[i] || isBypassed) {
                 filters[i].template process<true>(subMainBuffer, subSideBuffer);
             } else {
+                //test
                 filters[i].template process<false>(subMainBuffer, subSideBuffer);
             }
         }

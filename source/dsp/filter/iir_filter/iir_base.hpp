@@ -110,6 +110,7 @@ namespace zlFilter {
             mCoeff[4] = static_cast<SampleType>(coeff[2] * a0Inv);
         }
 
+        std::array<SampleType, 5> &getmCoeff() { return mCoeff; }
     private:
         std::array<SampleType, 5> mCoeff{0, 0, 0, 0, 0};
         std::vector<SampleType> s1, s2;

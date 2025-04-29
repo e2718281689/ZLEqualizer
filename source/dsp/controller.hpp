@@ -170,6 +170,8 @@ namespace zlDSP {
             return loudnessMatcher.getDiff();
         }
 
+        auto& getfilterLRIndices() { return filterLRIndices;}
+
     private:
         juce::AudioProcessor &processorRef;
 
