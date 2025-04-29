@@ -21,7 +21,8 @@
 namespace zlPanel {
     class MainPanel final : public juce::Component,
                             private juce::AudioProcessorValueTreeState::Listener,
-                            private juce::AsyncUpdater {
+                            private juce::AsyncUpdater
+                            {
     public:
         explicit MainPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
@@ -55,8 +56,6 @@ namespace zlPanel {
         CollisionBox collisionBox;
         GeneralBox generalBox;
 
-        CoeffTable coeffTable;
-
         juce::ScopedPointer<juce::DocumentWindow> extraWindow;
 
         zlInterface::TooltipLookAndFeel tooltipLAF;
@@ -67,5 +66,6 @@ namespace zlPanel {
         void handleAsyncUpdate() override;
 
         void updateFFTs();
+
     };
 }

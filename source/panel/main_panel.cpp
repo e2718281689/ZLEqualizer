@@ -22,7 +22,8 @@ namespace zlPanel {
           dynamicBox(p.parameters, uiBase),
           collisionBox(p.parametersNA, uiBase),
           generalBox(p.parameters, uiBase),
-          tooltipLAF(uiBase), tooltipWindow(&curvePanel) {
+          tooltipLAF(uiBase), tooltipWindow(&curvePanel)
+    {
         processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
@@ -54,7 +55,7 @@ namespace zlPanel {
                                                juce::Colours::lightgrey,
                                                juce::DocumentWindow::allButtons);
 
-        extraWindow->setContentOwned( new CoeffTable, true);
+        extraWindow->setContentOwned( new CoeffTable(p), true);
         // 允许改变大小
         extraWindow->setResizable(true, true);
         // 居中并设置初始大小
@@ -69,6 +70,9 @@ namespace zlPanel {
         state.removeParameterListener(zlState::fftExtraTilt::ID, this);
         state.removeParameterListener(zlState::fftExtraSpeed::ID, this);
         state.removeParameterListener(zlState::refreshRate::ID, this);
+
+        extraWindow = nullptr; // 主动释放 extraWindow（触发析构、销毁窗口）
+
     }
 
     void MainPanel::paint(juce::Graphics &g) {
@@ -169,4 +173,5 @@ namespace zlPanel {
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }
+
 }
