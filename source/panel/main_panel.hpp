@@ -57,6 +57,8 @@ namespace zlPanel {
 
         CoeffTable coeffTable;
 
+        juce::ScopedPointer<juce::DocumentWindow> extraWindow;
+
         zlInterface::TooltipLookAndFeel tooltipLAF;
         zlInterface::TooltipWindow tooltipWindow;
 

@@ -36,8 +36,6 @@ namespace zlPanel {
         addChildComponent(collisionBox);
         addChildComponent(generalBox);
 
-        addAndMakeVisible(coeffTable);
-
         tooltipWindow.setLookAndFeel(&tooltipLAF);
         tooltipWindow.setOpaque(false);
         tooltipWindow.setBufferedToImage(true);
@@ -51,6 +49,19 @@ namespace zlPanel {
         uiBase.closeAllBox();
 
         lookAndFeelChanged();
+
+        extraWindow = new juce::DocumentWindow("My Window",
+                                               juce::Colours::lightgrey,
+                                               juce::DocumentWindow::allButtons);
+
+        extraWindow->setContentOwned( new CoeffTable, true);
+        // 允许改变大小
+        extraWindow->setResizable(true, true);
+        // 居中并设置初始大小
+        extraWindow->centreWithSize(500, 400);
+        // 显示窗口
+        extraWindow->setVisible(true);
+
     }
 
     MainPanel::~MainPanel() {
@@ -112,10 +123,6 @@ namespace zlPanel {
 
         const auto controlBound = bound.removeFromBottom(juce::roundToInt(fontSize * 7.348942487176095f));
         controlPanel.setBounds(controlBound);
-        coeffTable.setBounds(controlBound.getX()+controlBound.getWidth()*0.55,
-                                controlBound.getY(),
-                                controlBound.getWidth(),
-                                controlBound.getHeight());
 
         const auto scaleBound = bound.removeFromRight(juce::roundToInt(uiBase.getFontSize() * 4.2f));
         curvePanel.setBounds(bound.toNearestInt());
