@@ -53,6 +53,7 @@ namespace zlContainer {
             return N;
         }
 
+        size_t getmSize() {return mSize;}
     private:
         std::array<T, N> data{};
         size_t mSize = 0;
