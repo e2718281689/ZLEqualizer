@@ -103,7 +103,7 @@ namespace zlPanel
 
     void CoeffTable::paint(juce::Graphics &g)
     {
-        g.fillAll(juce::Colours::blue); // 填充整个组件为蓝色
+        g.fillAll(juce::Colours::grey); // 填充整个组件为蓝色
     }
 
     void CoeffTable::resized()
