@@ -37,7 +37,7 @@ namespace zlPanel {
         addChildComponent(collisionBox);
         addChildComponent(generalBox);
 
-        addAndMakeVisible(coeffTable);
+        addChildComponent(coeffTable);
         addAndMakeVisible(toggleButton);
 
         toggleButton.onClick = [this]() {
