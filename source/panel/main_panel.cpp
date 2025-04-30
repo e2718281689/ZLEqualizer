@@ -22,7 +22,7 @@ namespace zlPanel {
           dynamicBox(p.parameters, uiBase),
           collisionBox(p.parametersNA, uiBase),
           generalBox(p.parameters, uiBase),
-          tooltipLAF(uiBase), tooltipWindow(&curvePanel)
+          tooltipLAF(uiBase), tooltipWindow(&curvePanel),coeffTable(p)
     {
         processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
@@ -36,6 +36,17 @@ namespace zlPanel {
         addChildComponent(dynamicBox);
         addChildComponent(collisionBox);
         addChildComponent(generalBox);
+
+        addAndMakeVisible(coeffTable);
+        addAndMakeVisible(toggleButton);
+
+        toggleButton.onClick = [this]() {
+            if (toggleButton.getToggleState())
+                coeffTable.setVisible(true);
+            else
+                coeffTable.setVisible(false);
+            resized();
+        };
 
         tooltipWindow.setLookAndFeel(&tooltipLAF);
         tooltipWindow.setOpaque(false);
@@ -61,7 +72,9 @@ namespace zlPanel {
         // 居中并设置初始大小
         extraWindow->centreWithSize(500, 400);
         // 显示窗口
-        extraWindow->setVisible(true);
+        extraWindow->setVisible(false);
+
+
 
     }
 
@@ -80,7 +93,16 @@ namespace zlPanel {
     }
 
     void MainPanel::resized() {
-        auto bound = getLocalBounds();
+        auto allbound = getLocalBounds();
+
+        if (coeffTable.isVisible())
+        {
+            allbound.setWidth( allbound.getWidth()-270 );
+            coeffTable.setBounds(allbound.getWidth(),0,270,allbound.getHeight());
+        }
+        toggleButton.setBounds(allbound.getWidth()-20,allbound.getHeight()*0.36,20,40);
+
+        auto bound = allbound;
         if (static_cast<float>(bound.getHeight()) < 0.47f * static_cast<float>(bound.getWidth())) {
             bound.setHeight(juce::roundToInt(0.47f * static_cast<float>(bound.getWidth())));
         }

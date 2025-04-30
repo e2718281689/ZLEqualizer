@@ -26,11 +26,11 @@ namespace zlPanel
         coeffs.clear();
         table.setModel(&model);
 
-        table.getHeader().addColumn("A0 ", 1, 100);
-        table.getHeader().addColumn("A1 ", 2, 100);
-        table.getHeader().addColumn("A2 ", 3, 100);
-        table.getHeader().addColumn("B1 ", 4, 100);
-        table.getHeader().addColumn("B2 ", 5, 100);
+        table.getHeader().addColumn("A0 ", 1, 50);
+        table.getHeader().addColumn("A1 ", 2, 50);
+        table.getHeader().addColumn("A2 ", 3, 50);
+        table.getHeader().addColumn("B1 ", 4, 50);
+        table.getHeader().addColumn("B2 ", 5, 50);
 
         table.setHeaderHeight(25);
         table.setRowHeight(24);

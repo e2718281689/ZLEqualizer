@@ -243,7 +243,7 @@ namespace zlState {
         auto static constexpr name = "NA";
         inline static constexpr float minV = 600.f;
         inline static constexpr float maxV = 6000.f;
-        inline static constexpr float defaultV = 704.f;
+        inline static constexpr float defaultV = 704.f + 200.0f;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
