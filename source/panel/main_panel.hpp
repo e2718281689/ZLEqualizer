@@ -61,8 +61,6 @@ namespace zlpanel {
         zlPanel::CoeffTable coeffTable;
         ToggleButton toggleButton;
 
-        juce::ScopedPointer<juce::DocumentWindow> extraWindow;
-
 
         void parameterChanged(const juce::String &parameter_id, float new_value) override;
 

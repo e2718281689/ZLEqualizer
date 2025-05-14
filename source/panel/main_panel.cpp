@@ -61,20 +61,6 @@ namespace zlpanel {
 
         lookAndFeelChanged();
 
-        extraWindow = new juce::DocumentWindow("My Window",
-                                               juce::Colours::lightgrey,
-                                               juce::DocumentWindow::allButtons);
-
-        extraWindow->setContentOwned( new zlPanel::CoeffTable(p), true);
-        // 允许改变大小
-        extraWindow->setResizable(true, true);
-        // 居中并设置初始大小
-        extraWindow->centreWithSize(500, 400);
-        // 显示窗口
-        extraWindow->setVisible(false);
-
-
-
     }
 
     MainPanel::~MainPanel() {
@@ -82,7 +68,6 @@ namespace zlpanel {
         state.removeParameterListener(zlstate::fftExtraTilt::ID, this);
         state.removeParameterListener(zlstate::fftExtraSpeed::ID, this);
         state.removeParameterListener(zlstate::refreshRate::ID, this);
-        extraWindow = nullptr; // 主动释放 extraWindow（触发析构、销毁窗口）
     }
 
     void MainPanel::paint(juce::Graphics &g) {

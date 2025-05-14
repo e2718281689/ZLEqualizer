@@ -172,10 +172,10 @@ namespace zlpanel {
     void ControlSettingPanel::exportCoeff()
     {
         auto& Controller = processor_ref_.getController();
-        auto& Filters = Controller.getFilters();
-        auto& mFilter = Filters[0].getMainFilter();
-        auto& filters = mFilter.getFilters();
-        auto& mCoeff = filters[0].getmCoeff();
+        // auto& Filters = Controller.getFilters();
+        // auto& mFilter = Filters[0].getMainFilter();
+        // auto& filters = mFilter.getFilters();
+        // auto& mCoeff = filters[0].getmCoeff();
 
         auto& xxx = Controller.getfilterLRIndices();
         const auto &indices{xxx[0]};

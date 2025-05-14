@@ -51,7 +51,7 @@ namespace zlPanel
         const auto &indices{filterLRIndices[0]};
 
         coeffs.clear();
-        for (int i = 0; i < filterLRIndices[0].getmSize(); ++i)
+        for (size_t i = 0; i < filterLRIndices[0].getmSize(); ++i)
         {
 
             auto& mFilter = Filters[indices[i]].getMainFilter();
