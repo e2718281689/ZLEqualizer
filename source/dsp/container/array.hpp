@@ -53,7 +53,7 @@ namespace zldsp::container {
             return N;
         }
 
-        size_t getmSize() {return mSize;}
+        size_t getmSize() {return size_;}
     private:
         std::array<T, N> data{};
         size_t size_ = 0;

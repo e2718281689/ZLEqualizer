@@ -72,7 +72,7 @@ namespace zlgui {
         juce::Identifier("collision_box"), juce::Identifier("general_box")
     };
 
-    static constexpr std::array<std::string, kColourNum> kColourNames{
+    static  std::array<std::string, kColourNum> kColourNames{
         "text", "background",
         "shadow", "glow",
         "pre", "post", "side",

@@ -12,7 +12,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 inline std::optional<double> parseFreqPitchString(juce::String s) {
-    static constexpr std::array<std::string, 12> kPitchLookUp{
+    static const std::array<std::string, 12> kPitchLookUp{
         "A", "A#", "B", "C",
         "C#", "D", "D#", "E",
         "F", "F#", "G", "G#"

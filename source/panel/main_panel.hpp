@@ -58,13 +58,11 @@ namespace zlpanel {
 
         zlgui::TooltipLookAndFeel tooltipLAF;
         zlgui::TooltipWindow tooltipWindow;
-        CoeffTable coeffTable;
+        zlPanel::CoeffTable coeffTable;
         ToggleButton toggleButton;
 
         juce::ScopedPointer<juce::DocumentWindow> extraWindow;
 
-        zlInterface::TooltipLookAndFeel tooltipLAF;
-        zlInterface::TooltipWindow tooltipWindow;
 
         void parameterChanged(const juce::String &parameter_id, float new_value) override;
 

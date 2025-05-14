@@ -110,7 +110,7 @@ namespace zldsp::filter {
             coeff_[4] = static_cast<SampleType>(coeff[2] * a0_inv);
         }
 
-        std::array<SampleType, 5> &getmCoeff() { return mCoeff; }
+        std::array<SampleType, 5> &getmCoeff() { return coeff_; }
     private:
         std::array<SampleType, 5> coeff_{0, 0, 0, 0, 0};
         std::vector<SampleType> s1_, s2_;

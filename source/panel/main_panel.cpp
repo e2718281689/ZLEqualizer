@@ -65,7 +65,7 @@ namespace zlpanel {
                                                juce::Colours::lightgrey,
                                                juce::DocumentWindow::allButtons);
 
-        extraWindow->setContentOwned( new CoeffTable(p), true);
+        extraWindow->setContentOwned( new zlPanel::CoeffTable(p), true);
         // 允许改变大小
         extraWindow->setResizable(true, true);
         // 居中并设置初始大小

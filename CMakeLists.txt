@@ -37,6 +37,11 @@ set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 if (NOT DEFINED ZL_JUCE_COPY_PLUGIN)
     set (ZL_JUCE_COPY_PLUGIN TRUE)
 endif ()

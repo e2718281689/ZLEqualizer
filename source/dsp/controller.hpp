@@ -169,7 +169,7 @@ namespace zlp {
             return loudness_matcher_.getDiff();
         }
 
-        auto& getfilterLRIndices() { return filterLRIndices;}
+        auto& getfilterLRIndices() { return filter_lr_indices_;}
 
     private:
         juce::AudioProcessor &processor_ref_;

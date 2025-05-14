@@ -23,7 +23,7 @@ namespace zlpanel {
             0.59836837f, 0.68843178f, 0.80748914f, 0.89755255f, 0.98761596f
         };
 
-        static constexpr std::array<std::string, 10> kBackgroundFreqsNames = {
+        static constexpr const std::array<const char*, 10> kBackgroundFreqsNames = {
             "20", "50", "100", "200", "500", "1k", "2k", "5k", "10k", "20k"
         };
 
