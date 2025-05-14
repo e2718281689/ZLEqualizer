@@ -13,11 +13,11 @@
 #include <juce_dsp/juce_dsp.h>
 #include "fifo_audio_buffer.hpp"
 
-namespace zlAudioBuffer {
+namespace zldsp::buffer {
     template<typename FloatType>
     class FixedAudioBuffer {
     public:
-        juce::AudioBuffer<FloatType> subBuffer;
+        juce::AudioBuffer<FloatType> sub_buffer_;
 
         explicit FixedAudioBuffer(int subBufferSize = 1);
 
@@ -44,20 +44,20 @@ namespace zlAudioBuffer {
         juce::dsp::AudioBlock<FloatType> getSubBlockChannels(int channelOffset, int numChannels);
 
         inline auto isSubReady() {
-            return inputBuffer.getNumReady() >= subBuffer.getNumSamples();
+            return input_buffer_.getNumReady() >= sub_buffer_.getNumSamples();
         }
 
-        inline auto getMainSpec() { return mainSpec; }
+        inline auto getMainSpec() { return main_spec_; }
 
-        inline auto getSubSpec() { return subSpec; }
+        inline auto getSubSpec() { return sub_spec_; }
 
-        inline juce::uint32 getLatencySamples() {
-            return static_cast<juce::uint32>(latencyInSamples.load());
+        inline juce::uint32 getLatencySamples() const {
+            return static_cast<juce::uint32>(latency_in_samples_.load());
         }
 
     private:
-        FIFOAudioBuffer<FloatType> inputBuffer, outputBuffer;
-        juce::dsp::ProcessSpec subSpec, mainSpec;
-        std::atomic<juce::uint32> latencyInSamples{0};
+        FIFOAudioBuffer<FloatType> input_buffer_, output_buffer_;
+        juce::dsp::ProcessSpec sub_spec_, main_spec_;
+        std::atomic<juce::uint32> latency_in_samples_{0};
     };
 }

@@ -11,7 +11,7 @@
 
 #include "origin_gain.hpp"
 
-namespace zlGain {
+namespace zldsp::gain {
     /**
      * a lock free, thread safe gain class
      * it will not process the signal if the gain is equal to 1
@@ -23,37 +23,37 @@ namespace zlGain {
         SimpleGain() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            gainDSP.prepare(spec, 1.0);
+            gain_dsp_.prepare(spec, 1.0);
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
-            if (isBypassed) { return; }
-            if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
-            gainDSP.setGainLinear(gain.load());
-            gainDSP.template process<false>(buffer);
+            if (IsBypassed) { return; }
+            if (std::abs(gain_.load() - 1) <= FloatType(1e-6)) { return; }
+            gain_dsp_.setGainLinear(gain_.load());
+            gain_dsp_.template process<false>(buffer);
         }
 
         template<bool isBypassed = false>
         void process(juce::dsp::AudioBlock<FloatType> block) {
             if (isBypassed) { return; }
-            if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
-            gainDSP.setGainLinear(gain.load());
-            gainDSP.template process<false>(block);
+            if (std::abs(gain_.load() - 1) <= FloatType(1e-6)) { return; }
+            gain_dsp_.setGainLinear(gain_.load());
+            gain_dsp_.template process<false>(block);
         }
 
-        void setGainLinear(const FloatType x) { gain.store(x); }
+        void setGainLinear(const FloatType x) { gain_.store(x); }
 
         void setGainDecibels(const FloatType x) {
-            gain.store(juce::Decibels::decibelsToGain(x, FloatType(-240)));
+            gain_.store(juce::Decibels::decibelsToGain(x, FloatType(-240)));
         }
 
         FloatType getGainDecibels() const {
-            return juce::Decibels::gainToDecibels(gain.load());
+            return juce::Decibels::gainToDecibels(gain_.load());
         }
 
     private:
-        std::atomic<FloatType> gain{FloatType(1)};
-        Gain<FloatType> gainDSP;
+        std::atomic<FloatType> gain_{FloatType(1)};
+        Gain<FloatType> gain_dsp_;
     };
-} // zlGain
+} // zldsp::gain

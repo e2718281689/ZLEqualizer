@@ -11,39 +11,39 @@
 
 #include "../../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     ResetComponent::ResetComponent(juce::AudioProcessorValueTreeState &parameters,
-                                   juce::AudioProcessorValueTreeState &parametersNA,
-                                   zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
-          uiBase(base),
-          drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get(), nullptr, zlInterface::multilingual::labels::bandOff) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
-        button.getButton().onClick = [this]() {
-            const auto currentBand = bandIdx.load();
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
-                    parametersNARef.getParameter(activeID)->beginChangeGesture();
-                    parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-                    parametersNARef.getParameter(activeID)->endChangeGesture();
+                                   juce::AudioProcessorValueTreeState &parameters_NA,
+                                   zlgui::UIBase &base)
+        : parameters_ref_(parameters),
+          parameters_NA_ref_(parameters_NA),
+          ui_base_(base),
+          drawable_(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
+          button_(base, drawable_.get(), nullptr, zlgui::multilingual::Labels::kBandOff) {
+        juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
+        button_.getButton().onClick = [this]() {
+            const auto currentBand = band_idx_.load();
+            const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
+            for(size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
+                    const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
+                    parameters_NA_ref_.getParameter(activeID)->beginChangeGesture();
+                    parameters_NA_ref_.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+                    parameters_NA_ref_.getParameter(activeID)->endChangeGesture();
                 }
             }
         };
-        button.setPadding(.0f, .0f, .0f, .0f);
-        addAndMakeVisible(button);
+        button_.setPadding(.0f, .0f, .0f, .0f);
+        addAndMakeVisible(button_);
     }
 
     ResetComponent::~ResetComponent() = default;
 
     void ResetComponent::resized() {
-        button.setBounds(getLocalBounds());
+        button_.setBounds(getLocalBounds());
     }
 
     void ResetComponent::attachGroup(const size_t idx) {
-        bandIdx.store(idx);
+        band_idx_.store(idx);
     }
-} // zlPanel
+} // zlpanel

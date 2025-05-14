@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlInterface {
+namespace zlgui {
     class TooltipWindow final : public juce::TooltipWindow {
     public:
         explicit TooltipWindow(Component *parentComponent, const int millisecondsBeforeTipAppears = 700)
@@ -19,12 +19,12 @@ namespace zlInterface {
         }
 
         juce::String getTipFor(Component &c) override {
-            return isON ? juce::TooltipWindow::getTipFor(c) : juce::String();
+            return is_on_ ? juce::TooltipWindow::getTipFor(c) : juce::String();
         }
 
-        void setON(const bool x) { isON = x; }
+        void setON(const bool x) { is_on_ = x; }
 
     private:
-        bool isON{true};
+        bool is_on_{true};
     };
 }

@@ -9,65 +9,65 @@
 
 #include "match_setting_panel.hpp"
 
-namespace zlPanel {
-    MatchSettingPanel::MatchSettingPanel(zlInterface::UIBase &base)
-        : uiBase(base) {
+namespace zlpanel {
+    MatchSettingPanel::MatchSettingPanel(zlgui::UIBase &base)
+        : ui_base_(base) {
 
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, false);
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelShow, false);
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, false);
 
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::eqMatch));
+        SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kEQMatch));
         setBufferedToImage(true);
 
-        uiBase.getValueTree().addListener(this);
+        ui_base_.getValueTree().addListener(this);
     }
 
     MatchSettingPanel::~MatchSettingPanel() {
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
     }
 
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        const auto isMatchShow = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
-        if (isMatchShow) {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        const auto is_match_show = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
+        if (is_match_show) {
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
         }
 
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                 ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
-        g.setFont(uiBase.getFontSize() * 1.375f);
-        if (isMatchShow) {
-            g.setColour(uiBase.getTextColor());
+        g.setFont(ui_base_.getFontSize() * 1.375f);
+        if (is_match_show) {
+            g.setColour(ui_base_.getTextColor());
         } else {
-            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+            g.setColour(ui_base_.getTextColor().withAlpha(.75f));
         }
         g.drawText("Match", bound, juce::Justification::centred);
     }
 
     void MatchSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, !f);
+        const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelShow, !f);
         if (!f) {
-            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, false);
         }
     }
 
     void MatchSettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
     }
 
-    void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+    void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                                      const juce::Identifier &property) {
-        juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchPanelShow, property)) {
+        juce::ignoreUnused(tree_whose_property_has_changed);
+        if (zlgui::UIBase::isProperty(zlgui::SettingIdx::kMatchPanelShow, property)) {
             repaint();
         }
     }
-} // zlPanel
+} // zlpanel

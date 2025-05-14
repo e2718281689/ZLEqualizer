@@ -14,14 +14,14 @@
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
 
 class ButtonPopUpBackground: public juce::Component {
 public:
         explicit ButtonPopUpBackground(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base);
+                             juce::AudioProcessorValueTreeState &parameters_NA,
+                             zlgui::UIBase &base);
 
         ~ButtonPopUpBackground() override = default;
 
@@ -30,22 +30,22 @@ public:
         void resized() override;
 
     private:
-        size_t band;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        size_t band_idx_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
 
-        std::atomic<float> width{7.7916666f}, height{4.16667f};
-        std::atomic<zlFilter::FilterType> fType;
+        std::atomic<float> width_{7.7916666f}, height_{4.16667f};
+        std::atomic<zldsp::filter::FilterType> f_type_;
 
-        zlInterface::CompactButton bypassC, soloC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
-        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
+        zlgui::CompactButton bypass_c_, solo_c_;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > button_attachments_;
+        const std::unique_ptr<juce::Drawable> bypass_drawable_, solo_drawable_;
 
-        zlInterface::CompactCombobox fTypeC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+        zlgui::CompactCombobox ftype_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_;
 
-        const std::unique_ptr<juce::Drawable> drawable;
-        zlInterface::ClickButton button;
+        const std::unique_ptr<juce::Drawable> close_drawable_;
+        zlgui::ClickButton close_c_;
 };
 
-} // zlPanel
+} // zlpanel

@@ -11,31 +11,31 @@
 
 #include "match_analyzer_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchPanel final : public juce::Component {
     public:
-        explicit MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
-                            juce::AudioProcessorValueTreeState &parametersNA,
-                            zlInterface::UIBase &base);
+        explicit MatchPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
+                            juce::AudioProcessorValueTreeState &parameters_NA,
+                            zlgui::UIBase &base);
 
         ~MatchPanel() override;
 
         void resized() override;
 
         void updatePaths() {
-            matchAnalyzerPanel.updatePaths();
+            match_analyzer_panel_.updatePaths();
         }
 
         void updateDraggers() {
-            matchAnalyzerPanel.updateDraggers();
+            match_analyzer_panel_.updateDraggers();
         }
 
         void visibilityChanged() override {
-            matchAnalyzerPanel.setVisible(isVisible());
+            match_analyzer_panel_.setVisible(isVisible());
         }
 
     private:
-        zlInterface::UIBase &uiBase;
-        MatchAnalyzerPanel matchAnalyzerPanel;
+        zlgui::UIBase &ui_base_;
+        MatchAnalyzerPanel match_analyzer_panel_;
     };
-} // zlPanel
+} // zlpanel

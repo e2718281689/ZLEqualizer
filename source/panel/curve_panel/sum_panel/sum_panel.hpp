@@ -15,23 +15,23 @@
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SumPanel final : public juce::Component,
                            private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
-                          zlInterface::UIBase &base,
-                          zlDSP::Controller<double> &controller,
-                          std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
-                          std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters);
+                          zlgui::UIBase &base,
+                          zlp::Controller<double> &controller,
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &base_filters,
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &main_filters);
 
         ~SumPanel() override;
 
         void paint(juce::Graphics &g) override;
 
         void setMaximumDB(const float x) {
-            maximumDB.store(x);
-            toRepaint.store(true);
+            maximum_db_.store(x);
+            to_repaint_.store(true);
         }
 
         bool checkRepaint();
@@ -43,29 +43,29 @@ namespace zlPanel {
         void lookAndFeelChanged() override;
 
     private:
-        std::array<juce::Path, 5> paths, recentPaths, strokePaths;
-        std::array<juce::SpinLock, 5> pathLocks;
-        std::array<juce::Colour, 5> colours;
-        juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &c;
-        std::array<zlFilter::Ideal<double, 16>, zlState::bandNUM> &mMainFilters;
-        std::atomic<float> maximumDB;
-        std::vector<double> dBs{};
-        AtomicBound<float> atomicBound;
-        std::atomic<float> curveThickness{0.f};
+        std::array<juce::Path, 5> paths_, recent_paths_, stroke_paths_;
+        std::array<juce::SpinLock, 5> path_locks_;
+        std::array<juce::Colour, 5> colours_;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        zlgui::UIBase &ui_base_;
+        zlp::Controller<double> &controller_ref_;
+        std::array<zldsp::filter::Ideal<double, 16>, zlstate::kBandNUM> &main_filters_;
+        std::atomic<float> maximum_db_;
+        std::vector<double> dbs_{};
+        AtomicBound<float> atomic_bound_;
+        std::atomic<float> curve_thickness_{0.f};
 
-        static constexpr std::array changeIDs{
-            zlDSP::bypass::ID, zlDSP::lrType::ID
+        static constexpr std::array kChangeIDs{
+            zlp::bypass::ID, zlp::lrType::ID
         };
 
-        std::array<std::atomic<bool>, zlState::bandNUM> isBypassed{};
-        std::array<std::atomic<zlDSP::lrType::lrTypes>, zlState::bandNUM> lrTypes;
+        std::array<std::atomic<bool>, zlstate::kBandNUM> is_bypassed_{};
+        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::kBandNUM> lr_types_;
 
-        std::atomic<bool> toRepaint{false};
+        std::atomic<bool> to_repaint_{false};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void updateCurveThickness();
     };
-} // zlPanel
+} // zlpanel

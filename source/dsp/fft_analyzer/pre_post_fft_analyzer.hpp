@@ -11,7 +11,7 @@
 
 #include "multiple_fft_analyzer.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     /**
      * a fft analyzer which process pre, post and side audio buffers
      * @tparam FloatType the float type of input audio buffers
@@ -19,9 +19,9 @@ namespace zlFFTAnalyzer {
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
-        static constexpr size_t pointNum = 251;
+        static constexpr size_t kPointNum = 251;
 
-        explicit PrePostFFTAnalyzer(size_t fftOrder = 12);
+        explicit PrePostFFTAnalyzer(size_t fft_order = 12);
 
         ~PrePostFFTAnalyzer() override {
             if (isThreadRunning()) {
@@ -37,37 +37,37 @@ namespace zlFFTAnalyzer {
                      juce::AudioBuffer<FloatType> &post,
                      juce::AudioBuffer<FloatType> &side);
 
-        MultipleFFTAnalyzer<FloatType, 3, pointNum> &getMultipleFFT() { return fftAnalyzer; }
+        MultipleFFTAnalyzer<FloatType, 3, kPointNum> &getMultipleFFT() { return fft_analyzer_; }
 
         void setON(bool x);
 
         void setPreON(bool x);
 
-        inline bool getPreON() const { return isPreON.load(); }
+        inline bool getPreON() const { return is_pre_on_.load(); }
 
         void setPostON(bool x);
 
-        inline bool getPostON() const { return isPostON.load(); }
+        inline bool getPostON() const { return is_post_on_.load(); }
 
         void setSideON(bool x);
 
-        inline bool getSideON() const { return isSideON.load(); }
+        inline bool getSideON() const { return is_side_on_.load(); }
 
-        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
-                         juce::Rectangle<float> bound, float minimumFFTDB);
+        void updatePaths(juce::Path &pre_path, juce::Path &post_path, juce::Path &side_path,
+                         juce::Rectangle<float> bound, float minimum_fft_db);
 
     private:
-        MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
-        std::atomic<bool> isON{false};
-        std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
-        bool currentON{false}, currentPreON{true}, currentPostON{true}, currentSideON{false};
-        std::atomic<float> xx, yy, width, height;
-        std::atomic<bool> isBoundReady{false};
-        std::atomic<bool> isPathReady{false};
-        std::atomic<bool> toReset{false};
+        MultipleFFTAnalyzer<FloatType, 3, kPointNum> fft_analyzer_;
+        std::atomic<bool> is_on_{false};
+        std::atomic<bool> is_pre_on_{true}, is_post_on_{true}, is_side_on_{false};
+        bool current_on_{false}, current_pre_on_{true}, current_post_on_{true}, current_side_on_{false};
+        std::atomic<float> xx_, yy_, width_, height_;
+        std::atomic<bool> is_bound_ready_{false};
+        std::atomic<bool> is_path_ready_{false};
+        std::atomic<bool> to_reset_{false};
 
         void run() override;
 
         void handleAsyncUpdate() override;
     };
-} // zlFFT
+} // zldsp::fft

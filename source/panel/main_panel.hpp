@@ -19,13 +19,12 @@
 #include "coeff/CoeffTable.h"
 #include "coeff/ToggleButton.h"
 
-namespace zlPanel {
+namespace zlpanel {
     class MainPanel final : public juce::Component,
                             private juce::AudioProcessorValueTreeState::Listener,
-                            private juce::AsyncUpdater
-                            {
+                            private juce::AsyncUpdater {
     public:
-        explicit MainPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit MainPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~MainPanel() override;
 
@@ -42,9 +41,9 @@ namespace zlPanel {
         }
 
     private:
-        PluginProcessor &processorRef;
+        PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &state;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         ControlPanel controlPanel;
         CurvePanel curvePanel;
         ScalePanel scalePanel;
@@ -57,6 +56,8 @@ namespace zlPanel {
         CollisionBox collisionBox;
         GeneralBox generalBox;
 
+        zlgui::TooltipLookAndFeel tooltipLAF;
+        zlgui::TooltipWindow tooltipWindow;
         CoeffTable coeffTable;
         ToggleButton toggleButton;
 
@@ -65,11 +66,10 @@ namespace zlPanel {
         zlInterface::TooltipLookAndFeel tooltipLAF;
         zlInterface::TooltipWindow tooltipWindow;
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void handleAsyncUpdate() override;
 
         void updateFFTs();
-
     };
 }

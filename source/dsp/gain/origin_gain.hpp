@@ -14,71 +14,71 @@
 #include "../chore/smoothed_value.hpp"
 #include "../vector/vector.hpp"
 
-namespace zlGain {
+namespace zldsp::gain {
     template<typename FloatType>
     class Gain {
     public:
         Gain() noexcept = default;
 
         void reset() {
-            gain.setCurrentAndTarget(FloatType(0));
+            gain_.setCurrentAndTarget(FloatType(0));
         }
 
         void setGainLinear(FloatType newGain) noexcept {
-            gain.setTarget(newGain);
+            gain_.setTarget(newGain);
         }
 
         void setGainDecibels(FloatType newGainDecibels) noexcept {
             setGainLinear(juce::Decibels::decibelsToGain<FloatType>(newGainDecibels, (-240)));
         }
 
-        FloatType getTargetGainLinear() const noexcept { return gain.getTarget(); }
+        FloatType getTargetGainLinear() const noexcept { return gain_.getTarget(); }
 
         FloatType getTargetGainDecibels() const noexcept {
             return juce::Decibels::gainToDecibels<FloatType>(getTargetGainLinear(), FloatType(-240));
         }
 
-        FloatType getCurrentGainLinear() const noexcept { return gain.getCurrent(); }
+        FloatType getCurrentGainLinear() const noexcept { return gain_.getCurrent(); }
 
         FloatType getCurrentGainDecibels() const noexcept {
             return juce::Decibels::gainToDecibels<FloatType>(getCurrentGainLinear(), FloatType(-240));
         }
 
-        [[nodiscard]] bool isSmoothing() const noexcept { return gain.isSmoothing(); }
+        [[nodiscard]] bool isSmoothing() const noexcept { return gain_.isSmoothing(); }
 
         void prepare(const juce::dsp::ProcessSpec &spec, const double rampLengthInSeconds) noexcept {
-            gain.prepare(spec.sampleRate, rampLengthInSeconds);
-            gainVs.resize(static_cast<size_t>(spec.maximumBlockSize));
+            gain_.prepare(spec.sampleRate, rampLengthInSeconds);
+            gain_vs_.resize(static_cast<size_t>(spec.maximumBlockSize));
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
             auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            process<isBypassed>(block);
+            process<IsBypassed>(block);
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::dsp::AudioBlock<FloatType> block) {
-            if (!gain.isSmoothing()) {
-                if (isBypassed) return;
+            if (!gain_.isSmoothing()) {
+                if (IsBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
-                    auto *channelData = block.getChannelPointer(chan);
-                    zlVector::multiply(channelData, gain.getCurrent(), block.getNumSamples());
+                    auto *channel_data = block.getChannelPointer(chan);
+                    zldsp::vector::multiply(channel_data, gain_.getCurrent(), block.getNumSamples());
                 }
             } else {
                 for (size_t idx = 0; idx < block.getNumSamples(); ++idx) {
-                    gainVs[idx] = gain.getNext();
+                    gain_vs_[idx] = gain_.getNext();
                 }
-                if (isBypassed) return;
+                if (IsBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
-                    auto *channelData = block.getChannelPointer(chan);
-                    zlVector::multiply(channelData, gainVs.data(), block.getNumSamples());
+                    auto *channel_data = block.getChannelPointer(chan);
+                    zldsp::vector::multiply(channel_data, gain_vs_.data(), block.getNumSamples());
                 }
             }
         }
 
     private:
-        zlChore::SmoothedValue<FloatType, zlChore::SmoothedTypes::FixLin> gain;
-        kfr::univector<FloatType> gainVs;
+        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::FixLin> gain_{FloatType(1)};
+        kfr::univector<FloatType> gain_vs_;
     };
 }

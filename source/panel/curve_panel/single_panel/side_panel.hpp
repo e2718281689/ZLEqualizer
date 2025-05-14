@@ -15,16 +15,16 @@
 
 #include "../../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SidePanel final : public juce::Component,
                             private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit SidePanel(size_t bandIdx,
+        explicit SidePanel(size_t band_idx,
                            juce::AudioProcessorValueTreeState &parameters,
-                           juce::AudioProcessorValueTreeState &parametersNA,
-                           zlInterface::UIBase &base,
-                           zlDSP::Controller<double> &controller,
-                           zlInterface::Dragger &sideDragger);
+                           juce::AudioProcessorValueTreeState &parameters_NA,
+                           zlgui::UIBase &base,
+                           zlp::Controller<double> &controller,
+                           zlgui::Dragger &side_dragger);
 
         ~SidePanel() override;
 
@@ -35,23 +35,23 @@ namespace zlPanel {
         void updateDragger();
 
     private:
-        size_t idx;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &sideF;
-        zlInterface::Dragger &sideDraggerRef;
-        std::atomic<bool> dynON, selected, actived;
+        size_t band_idx_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        zldsp::filter::IIR<double, zlp::Controller<double>::kFilterSize> &side_f_;
+        zlgui::Dragger &side_dragger_ref_;
+        std::atomic<bool> dyn_on_, selected_, active_;
 
-        static constexpr std::array changeIDs{
-            zlDSP::dynamicON::ID, zlDSP::sideQ::ID
+        static constexpr std::array kChangeIDs{
+            zlp::dynamicON::ID, zlp::sideQ::ID
         };
 
-        juce::Colour colour;
+        juce::Colour colour_;
 
-        std::atomic<double> sideQ{0.707};
-        std::atomic<bool> toUpdate{false};
-        float currentBW{0.f};
+        std::atomic<double> side_q_{0.707};
+        std::atomic<bool> to_update_{false};
+        float current_bw_{0.f};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
     };
-} // zlPanel
+} // zlpanel

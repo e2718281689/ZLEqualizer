@@ -9,46 +9,46 @@
 
 #include "state_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     StatePanel::StatePanel(PluginProcessor &p,
-                           zlInterface::UIBase &base,
+                           zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel)
-        : uiBase(base), parametersNARef(p.parametersNA),
-          outputValuePanel(p, base),
-          outputSettingPanel(p, base, "", zlInterface::boxIdx::outputBox),
-          analyzerSettingPanel(p, base, "Analyzer", zlInterface::boxIdx::analyzerBox),
-          dynamicSettingPanel(p, base, "Dynamic", zlInterface::boxIdx::dynamicBox),
+        : ui_base_(base), parameters_NA_ref_(p.parameters_NA_),
+          output_value_panel_(p, base),
+          output_setting_panel_(p, base, "", zlgui::BoxIdx::kOutputBox),
+          analyzer_setting_panel_(p, base, "Analyzer", zlgui::BoxIdx::kAnalyzerBox),
+          dynamic_setting_panel_(p, base, "Dynamic", zlgui::BoxIdx::kDynamicBox),
 
-          collisionSettingPanel(p, base, "Collision", zlInterface::boxIdx::collisionBox),
-          generalSettingPanel(p, base, "General", zlInterface::boxIdx::generalBox),
-          matchSettingPanel(base),
-          logoPanel(p, base, uiSettingPanel),
-          effectC("", uiBase, zlInterface::multilingual::labels::bypass),
-          sideC("", uiBase, zlInterface::multilingual::labels::externalSideChain),
-          sgcC("", uiBase, zlInterface::multilingual::labels::staticGC),
-          effectDrawable(
+          collision_setting_panel_(p, base, "Collision", zlgui::BoxIdx::kCollisionBox),
+          general_setting_panel_(p, base, "General", zlgui::BoxIdx::kGeneralBox),
+          match_setting_panel_(base),
+          logo_panel_(p, base, uiSettingPanel),
+          effect_c_("", ui_base_, zlgui::multilingual::Labels::kBypass),
+          side_c_("", ui_base_, zlgui::multilingual::Labels::kExternalSideChain),
+          sgc_c_("", ui_base_, zlgui::multilingual::Labels::kStaticGC),
+          effect_drawable_(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
                                                   BinaryData::fadpowerswitch_svgSize)),
-          sideDrawable(juce::Drawable::createFromImageData(BinaryData::externalside_svg,
+          side_drawable_(juce::Drawable::createFromImageData(BinaryData::externalside_svg,
                                                            BinaryData::externalside_svgSize)),
-          sgcDrawable(juce::Drawable::createFromImageData(BinaryData::staticgaincompensation_svg,
+          sgc_drawable_(juce::Drawable::createFromImageData(BinaryData::staticgaincompensation_svg,
                                                           BinaryData::staticgaincompensation_svgSize)) {
         setInterceptsMouseClicks(false, true);
 
-        addAndMakeVisible(outputSettingPanel);
-        addAndMakeVisible(outputValuePanel);
-        addAndMakeVisible(analyzerSettingPanel);
-        addAndMakeVisible(dynamicSettingPanel);
-        addAndMakeVisible(collisionSettingPanel);
-        addAndMakeVisible(generalSettingPanel);
-        addAndMakeVisible(matchSettingPanel);
-        addAndMakeVisible(logoPanel);
+        addAndMakeVisible(output_setting_panel_);
+        addAndMakeVisible(output_value_panel_);
+        addAndMakeVisible(analyzer_setting_panel_);
+        addAndMakeVisible(dynamic_setting_panel_);
+        addAndMakeVisible(collision_setting_panel_);
+        addAndMakeVisible(general_setting_panel_);
+        addAndMakeVisible(match_setting_panel_);
+        addAndMakeVisible(logo_panel_);
 
-        effectC.setDrawable(effectDrawable.get());
-        sideC.setDrawable(sideDrawable.get());
-        sgcC.setDrawable(sgcDrawable.get());
+        effect_c_.setDrawable(effect_drawable_.get());
+        side_c_.setDrawable(side_drawable_.get());
+        sgc_c_.setDrawable(sgc_drawable_.get());
 
-        for (auto &c: {&effectC, &sideC, &sgcC}) {
+        for (auto &c: {&effect_c_, &side_c_, &sgc_c_}) {
             c->getLAF().enableShadow(false);
             c->getLAF().setShrinkScale(.0f);
             addAndMakeVisible(c);
@@ -56,58 +56,58 @@ namespace zlPanel {
         }
 
         attach({
-                   &effectC.getButton(),
-                   &sideC.getButton(),
-                   &sgcC.getButton(),
+                   &effect_c_.getButton(),
+                   &side_c_.getButton(),
+                   &sgc_c_.getButton(),
                },
-               {zlDSP::effectON::ID, zlDSP::sideChain::ID, zlDSP::staticAutoGain::ID},
-               p.parameters, buttonAttachments);
+               {zlp::effectON::ID, zlp::sideChain::ID, zlp::staticAutoGain::ID},
+               p.parameters_, button_attachments_);
 
-        sideC.getButton().onClick = [this]() {
-            const auto isSideOn = static_cast<int>(sideC.getButton().getToggleState());
-            const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
+        side_c_.getButton().onClick = [this]() {
+            const auto isSideOn = static_cast<int>(side_c_.getButton().getToggleState());
+            const auto para = parameters_NA_ref_.getParameter(zlstate::fftSideON::ID);
             para->beginChangeGesture();
-            para->setValueNotifyingHost(zlState::fftSideON::convertTo01(isSideOn));
+            para->setValueNotifyingHost(zlstate::fftSideON::convertTo01(isSideOn));
             para->endChangeGesture();
         };
     }
 
     void StatePanel::resized() {
         auto bound = getLocalBounds();
-        const auto logoBound = bound.removeFromLeft(
+        const auto logo_bound = bound.removeFromLeft(
             juce::roundToInt(static_cast<float>(bound.getWidth()) * .125f));
-        logoPanel.setBounds(logoBound);
+        logo_panel_.setBounds(logo_bound);
 
         const auto height = static_cast<float>(bound.getHeight());
 
-        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
-        const auto effectBound = bound.removeFromRight(buttonWidth);
-        effectC.setBounds(effectBound);
+        const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+        const auto effect_bound = bound.removeFromRight(button_width);
+        effect_c_.setBounds(effect_bound);
 
-        const auto sideBound = bound.removeFromRight(buttonWidth);
-        sideC.setBounds(sideBound);
+        const auto side_bound = bound.removeFromRight(button_width);
+        side_c_.setBounds(side_bound);
 
-        const auto sgcBound = bound.removeFromRight(buttonWidth);
-        sgcC.setBounds(sgcBound);
+        const auto sgc_bound = bound.removeFromRight(button_width);
+        sgc_c_.setBounds(sgc_bound);
 
-        bound.removeFromRight(buttonWidth / 4);
+        bound.removeFromRight(button_width / 4);
 
-        bound.removeFromBottom(juce::roundToInt(uiBase.getFontSize() * .5f));
+        bound.removeFromBottom(juce::roundToInt(ui_base_.getFontSize() * .5f));
 
-        const auto labelWidth = juce::roundToInt(height * labelSize);
-        const auto gapWidth = juce::roundToInt(height * .5f);
-        const auto mBound = bound.removeFromRight(labelWidth);
-        outputValuePanel.setBounds(mBound);
-        outputSettingPanel.setBounds(mBound);
-        bound.removeFromRight(gapWidth);
-        analyzerSettingPanel.setBounds(bound.removeFromRight(labelWidth));
-        bound.removeFromRight(gapWidth);
-        dynamicSettingPanel.setBounds(bound.removeFromRight(labelWidth));
-        bound.removeFromRight(gapWidth);
-        collisionSettingPanel.setBounds(bound.removeFromRight(labelWidth));
-        bound.removeFromRight(gapWidth);
-        generalSettingPanel.setBounds(bound.removeFromRight(labelWidth));
-        bound.removeFromRight(gapWidth);
-        matchSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        const auto label_width = juce::roundToInt(height * kLabelSize);
+        const auto gap_width = juce::roundToInt(height * .5f);
+        const auto new_bound = bound.removeFromRight(label_width);
+        output_value_panel_.setBounds(new_bound);
+        output_setting_panel_.setBounds(new_bound);
+        bound.removeFromRight(gap_width);
+        analyzer_setting_panel_.setBounds(bound.removeFromRight(label_width));
+        bound.removeFromRight(gap_width);
+        dynamic_setting_panel_.setBounds(bound.removeFromRight(label_width));
+        bound.removeFromRight(gap_width);
+        collision_setting_panel_.setBounds(bound.removeFromRight(label_width));
+        bound.removeFromRight(gap_width);
+        general_setting_panel_.setBounds(bound.removeFromRight(label_width));
+        bound.removeFromRight(gap_width);
+        match_setting_panel_.setBounds(bound.removeFromRight(label_width));
     }
-} // zlPanel
+} // zlpanel

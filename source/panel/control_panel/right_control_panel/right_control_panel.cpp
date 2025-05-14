@@ -10,61 +10,61 @@
 #include "right_control_panel.hpp"
 #include "BinaryData.h"
 
-namespace zlPanel {
+namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor &p,
-                                         zlInterface::UIBase &base)
-        : uiBase(base),
-          parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
-          background(uiBase),
-          dynBypassC("B", base, zlInterface::multilingual::labels::bandDynamicBypass),
-          dynSoloC("S", base, zlInterface::multilingual::labels::bandDynamicSolo),
-          dynRelativeC("R", base, zlInterface::multilingual::labels::bandDynamicRelative),
-          swapC("S", base, zlInterface::multilingual::labels::bandSideSwap),
-          sideFreqC("FREQ", base, zlInterface::multilingual::labels::bandDynamicSideFreq),
-          sideQC("Q", base, zlInterface::multilingual::labels::bandDynamicSideQ),
-          thresC("Threshold", base, zlInterface::multilingual::labels::bandDynamicThreshold),
-          kneeC("Knee", base, zlInterface::multilingual::labels::bandDynamicKnee),
-          attackC("Attack", base, zlInterface::multilingual::labels::bandDynamicAttack),
-          releaseC("Release", base, zlInterface::multilingual::labels::bandDynamicRelease),
-          bypassDrawable(
+                                         zlgui::UIBase &base)
+        : ui_base_(base),
+          parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
+          background_(ui_base_),
+          dyn_bypass_c_("B", base, zlgui::multilingual::Labels::kBandDynamicBypass),
+          dyn_solo_c_("S", base, zlgui::multilingual::Labels::kBandDynamicSolo),
+          dyn_relative_c_("R", base, zlgui::multilingual::Labels::kBandDynamicRelative),
+          swap_c_("S", base, zlgui::multilingual::Labels::kBandSideSwap),
+          side_freq_c_("FREQ", base, zlgui::multilingual::Labels::kBandDynamicSideFreq),
+          side_q_c_("Q", base, zlgui::multilingual::Labels::kBandDynamicSideQ),
+          threshold_c_("Threshold", base, zlgui::multilingual::Labels::kBandDynamicThreshold),
+          knee_c_("Knee", base, zlgui::multilingual::Labels::kBandDynamicKnee),
+          attack_c_("Attack", base, zlgui::multilingual::Labels::kBandDynamicAttack),
+          release_c_("Release", base, zlgui::multilingual::Labels::kBandDynamicRelease),
+          bypass_drawable_(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
-          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
-          relativeDrawable(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
-          swapDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
-        juce::ignoreUnused(parametersNARef);
-        addAndMakeVisible(background);
+          solo_drawable_(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
+          relative_drawable_(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
+          swap_drawable_(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
+        juce::ignoreUnused(parameters_NA_ref_);
+        addAndMakeVisible(background_);
 
-        dynBypassC.setDrawable(bypassDrawable.get());
-        dynBypassC.getLAF().setReverse(true);
-        dynBypassC.getButton().onClick = [this]() {
-            const auto isByPassed = static_cast<float>(dynBypassC.getButton().getToggleState());
-            const auto currentBand = bandIdx.load();
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlDSP::dynamicBypass::ID, idx);
-                    const auto para = parametersRef.getParameter(activeID);
+        dyn_bypass_c_.setDrawable(bypass_drawable_.get());
+        dyn_bypass_c_.getLAF().setReverse(true);
+        dyn_bypass_c_.getButton().onClick = [this]() {
+            const auto isByPassed = static_cast<float>(dyn_bypass_c_.getButton().getToggleState());
+            const auto currentBand = band_idx_.load();
+            const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
+            for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
+                    const auto activeID = zlstate::appendSuffix(zlp::dynamicBypass::ID, idx);
+                    const auto para = parameters_ref_.getParameter(activeID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(isByPassed);
                     para->endChangeGesture();
                 }
             }
         };
-        dynSoloC.setDrawable(soloDrawable.get());
-        dynRelativeC.setDrawable(relativeDrawable.get());
-        swapC.setDrawable(swapDrawable.get());
-        dynRelativeC.getLAF().setScale(1.25f);
-        swapC.getLAF().setScale(1.25f);
-        for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &swapC}) {
+        dyn_solo_c_.setDrawable(solo_drawable_.get());
+        dyn_relative_c_.setDrawable(relative_drawable_.get());
+        swap_c_.setDrawable(swap_drawable_.get());
+        dyn_relative_c_.getLAF().setScale(1.25f);
+        swap_c_.getLAF().setScale(1.25f);
+        for (auto &c: {&dyn_bypass_c_, &dyn_solo_c_, &dyn_relative_c_, &swap_c_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
-        for (auto &c: {&sideFreqC, &sideQC}) {
+        for (auto &c: {&side_freq_c_, &side_q_c_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
-        for (auto &c: {&thresC, &kneeC, &attackC, &releaseC}) {
+        for (auto &c: {&threshold_c_, &knee_c_, &attack_c_, &release_c_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
@@ -76,43 +76,43 @@ namespace zlPanel {
     void RightControlPanel::resized() {
         // update padding
         {
-            for (auto &s: {&sideFreqC, &sideQC}) {
-                s->setPadding(std::round(uiBase.getFontSize() * 0.5f), 0.f);
+            for (auto &s: {&side_freq_c_, &side_q_c_}) {
+                s->setPadding(std::round(ui_base_.getFontSize() * 0.5f), 0.f);
             }
 
-            for (auto &s: {&thresC, &kneeC, &attackC, &releaseC}) {
-                s->setPadding(std::round(uiBase.getFontSize() * 0.5f),
-                              std::round(uiBase.getFontSize() * 0.6f));
+            for (auto &s: {&threshold_c_, &knee_c_, &attack_c_, &release_c_}) {
+                s->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
+                              std::round(ui_base_.getFontSize() * 0.6f));
             }
         }
         // update bounds
         auto bound = getLocalBounds();
-        background.setBounds(bound); {
-            const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
+        background_.setBounds(bound); {
+            const auto pad = static_cast<int>(ui_base_.getFontSize() * .5f);
             bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
-        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * buttonWidthP);
-        const auto buttonHeight = std::min(static_cast<int>(uiBase.getFontSize() * buttonHeightP),
+        const auto button_width = static_cast<int>(ui_base_.getFontSize() * kButtonWidthP);
+        const auto button_height = std::min(static_cast<int>(ui_base_.getFontSize() * kButtonHeightP),
                                            bound.getHeight() / 2);
-        const auto sliderWidth = static_cast<int>(std::round(uiBase.getFontSize() * rSliderWidthP)); {
-            auto mBound = bound.removeFromLeft(buttonWidth);
-            dynBypassC.setBounds(mBound.removeFromTop(buttonHeight));
-            dynSoloC.setBounds(mBound.removeFromBottom(buttonHeight));
+        const auto slider_width = static_cast<int>(std::round(ui_base_.getFontSize() * kRotarySliderWidthP)); {
+            auto m_bound = bound.removeFromLeft(button_width);
+            dyn_bypass_c_.setBounds(m_bound.removeFromTop(button_height));
+            dyn_solo_c_.setBounds(m_bound.removeFromBottom(button_height));
         } {
-            auto mBound = bound.removeFromLeft(buttonWidth);
-            dynRelativeC.setBounds(mBound.removeFromTop(buttonHeight));
-            swapC.setBounds(mBound.removeFromBottom(buttonHeight));
+            auto m_bound = bound.removeFromLeft(button_width);
+            dyn_relative_c_.setBounds(m_bound.removeFromTop(button_height));
+            swap_c_.setBounds(m_bound.removeFromBottom(button_height));
         }
-        sideQC.setBounds(bound.removeFromRight(sliderWidth));
-        sideFreqC.setBounds(bound.removeFromRight(sliderWidth));
-        const auto remainingWidth = bound.getWidth() / 2; {
-            auto mBound = bound.removeFromLeft(remainingWidth);
-            thresC.setBounds(mBound.removeFromTop(buttonHeight));
-            kneeC.setBounds(mBound.removeFromBottom(buttonHeight));
+        side_q_c_.setBounds(bound.removeFromRight(slider_width));
+        side_freq_c_.setBounds(bound.removeFromRight(slider_width));
+        const auto remaining_width = bound.getWidth() / 2; {
+            auto m_bound = bound.removeFromLeft(remaining_width);
+            threshold_c_.setBounds(m_bound.removeFromTop(button_height));
+            knee_c_.setBounds(m_bound.removeFromBottom(button_height));
         } {
-            auto mBound = bound.removeFromLeft(remainingWidth);
-            attackC.setBounds(mBound.removeFromTop(buttonHeight));
-            releaseC.setBounds(mBound.removeFromBottom(buttonHeight));
+            auto m_bound = bound.removeFromLeft(remaining_width);
+            attack_c_.setBounds(m_bound.removeFromTop(button_height));
+            release_c_.setBounds(m_bound.removeFromBottom(button_height));
         }
         // update sliders' dragging distance
         updateMouseDragSensitivity();
@@ -123,33 +123,33 @@ namespace zlPanel {
     }
 
     void RightControlPanel::attachGroup(const size_t idx) {
-        bandIdx.store(idx);
+        band_idx_.store(idx);
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
 
-        buttonAttachments.clear(true);
-        sliderAttachments.clear(true);
+        button_attachments_.clear(true);
+        slider_attachments_.clear(true);
 
-        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &swapC.getButton()},
+        attach({&dyn_bypass_c_.getButton(), &dyn_solo_c_.getButton(), &dyn_relative_c_.getButton(), &swap_c_.getButton()},
                {
-                   zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix,
-                   zlDSP::dynamicRelative::ID + suffix, zlDSP::sideSwap::ID + suffix
+                   zlp::dynamicBypass::ID + suffix, zlp::sideSolo::ID + suffix,
+                   zlp::dynamicRelative::ID + suffix, zlp::sideSwap::ID + suffix
                },
-               parametersRef, buttonAttachments);
-        attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
+               parameters_ref_, button_attachments_);
+        attach({&threshold_c_.getSlider(), &attack_c_.getSlider(), &knee_c_.getSlider(), &release_c_.getSlider()},
                {
-                   zlDSP::threshold::ID + suffix, zlDSP::attack::ID + suffix,
-                   zlDSP::kneeW::ID + suffix, zlDSP::release::ID + suffix
+                   zlp::threshold::ID + suffix, zlp::attack::ID + suffix,
+                   zlp::kneeW::ID + suffix, zlp::release::ID + suffix
                },
-               parametersRef, sliderAttachments);
-        attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
-               {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
-               parametersRef, sliderAttachments);
+               parameters_ref_, slider_attachments_);
+        attach({&side_freq_c_.getSlider1(), &side_q_c_.getSlider1()},
+               {zlp::sideFreq::ID + suffix, zlp::sideQ::ID + suffix},
+               parameters_ref_, slider_attachments_);
     }
 
     void RightControlPanel::updateMouseDragSensitivity() {
-        const auto style = uiBase.getRotaryStyle();
-        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
-        for (auto &c: {&sideFreqC, &sideQC}) {
+        const auto style = ui_base_.getRotaryStyle();
+        const auto sensitivity = juce::roundToInt(ui_base_.getRotaryDragSensitivity() * ui_base_.getFontSize());
+        for (auto &c: {&side_freq_c_, &side_q_c_}) {
             c->getSlider1().setSliderStyle(style);
             c->getSlider2().setSliderStyle(style);
             c->setMouseDragSensitivity(sensitivity);

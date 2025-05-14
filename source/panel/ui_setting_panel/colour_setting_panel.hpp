@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ColourSettingPanel final : public juce::Component {
     public:
-        static constexpr float heightP = 56.f;
+        static constexpr float kHeightP = 56.f;
 
-        explicit ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~ColourSettingPanel() override;
 
@@ -33,27 +33,27 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
-        zlInterface::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
-        zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
-        zlInterface::ColourOpacitySelector gainSelector, sideLoudnessSelector;
-        static constexpr size_t numSelectors = 11;
-        std::array<juce::Label, numSelectors> selectorLabels;
-        std::array<zlInterface::ColourOpacitySelector *, numSelectors> selectors{
-            &textSelector,
-            &backgroundSelector,
-            &shadowSelector,
-            &glowSelector,
-            &preSelector,
-            &postSelector,
-            &sideSelector,
-            &gridSelector,
-            &tagSelector,
-            &gainSelector,
-            &sideLoudnessSelector
+        zlgui::UIBase &ui_base_;
+        zlgui::NameLookAndFeel name_laf_;
+        zlgui::ColourOpacitySelector text_selector_, background_selector_, shadow_selector_, glow_selector_;
+        zlgui::ColourOpacitySelector pre_selector_, post_selector_, side_selector_, grid_selector_, tag_selector_;
+        zlgui::ColourOpacitySelector gain_selector_, side_loudness_selector_;
+        static constexpr size_t kNumSelectors = 11;
+        std::array<juce::Label, kNumSelectors> selector_labels_;
+        std::array<zlgui::ColourOpacitySelector *, kNumSelectors> selectors_{
+            &text_selector_,
+            &background_selector_,
+            &shadow_selector_,
+            &glow_selector_,
+            &pre_selector_,
+            &post_selector_,
+            &side_selector_,
+            &grid_selector_,
+            &tag_selector_,
+            &gain_selector_,
+            &side_loudness_selector_
         };
-        std::array<std::string, numSelectors> selectorNames{
+        static constexpr std::array kSelectorNames{
             "Text Colour",
             "Background Colour",
             "Shadow Colour",
@@ -67,21 +67,21 @@ namespace zlPanel {
             "Side Loudness Colour"
         };
 
-        std::array<zlInterface::colourIdx, numSelectors> colourIdx{
-            zlInterface::colourIdx::textColour,
-            zlInterface::colourIdx::backgroundColour,
-            zlInterface::colourIdx::shadowColour,
-            zlInterface::colourIdx::glowColour,
-            zlInterface::colourIdx::preColour,
-            zlInterface::colourIdx::postColour,
-            zlInterface::colourIdx::sideColour,
-            zlInterface::colourIdx::gridColour,
-            zlInterface::colourIdx::tagColour,
-            zlInterface::colourIdx::gainColour,
-            zlInterface::colourIdx::sideLoudnessColour
+        static constexpr std::array<zlgui::ColourIdx, kNumSelectors> kColourIdx{
+            zlgui::ColourIdx::kTextColour,
+            zlgui::ColourIdx::kBackgroundColour,
+            zlgui::ColourIdx::kShadowColour,
+            zlgui::ColourIdx::kGlowColour,
+            zlgui::ColourIdx::kPreColour,
+            zlgui::ColourIdx::kPostColour,
+            zlgui::ColourIdx::kSideColour,
+            zlgui::ColourIdx::kGridColour,
+            zlgui::ColourIdx::kTagColour,
+            zlgui::ColourIdx::kGainColour,
+            zlgui::ColourIdx::kSideLoudnessColour
         };
 
-        std::array<std::string, numSelectors> tagNames{
+        static constexpr std::array kTagNames{
             "text_colour",
             "background_colour",
             "shadow_colour",
@@ -92,16 +92,16 @@ namespace zlPanel {
             "grid_colour",
         };
 
-        juce::Label cMap1Label, cMap2Label;
-        zlInterface::ColourMapSelector cMap1Selector, cMap2Selector;
-        juce::Label importLabel, exportLabel;
+        juce::Label c_map1_label_, c_map2_label_;
+        zlgui::ColourMapSelector c_map1_selector_, c_map2_selector_;
+        juce::Label import_label_, export_label_;
 
-        std::unique_ptr<juce::FileChooser> myChooser;
-        inline auto static const settingDirectory =
+        std::unique_ptr<juce::FileChooser> chooser_;
+        inline auto static const kSettingDirectory =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
                 .getChildFile("Audio")
                 .getChildFile("Presets")
                 .getChildFile(JucePlugin_Manufacturer)
                 .getChildFile("Shared Settings");
     };
-} // zlPanel
+} // zlpanel

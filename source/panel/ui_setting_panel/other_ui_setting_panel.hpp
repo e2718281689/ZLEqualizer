@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class OtherUISettingPanel final : public juce::Component {
     public:
-        static constexpr float heightP = 4.f * 7.f;
+        static constexpr float kHeightP = 4.f * 7.f;
 
-        explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit OtherUISettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         void loadSetting();
 
@@ -31,23 +31,23 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
+        zlgui::UIBase &ui_base_;
+        zlgui::NameLookAndFeel name_laf_;
 
-        juce::Label renderingEngineLabel;
-        zlInterface::CompactCombobox renderingEngineBox;
-        juce::Label refreshRateLabel;
-        zlInterface::CompactCombobox refreshRateBox;
-        juce::Label fftLabel;
-        zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
-        zlInterface::CompactCombobox fftOrderBox;
-        juce::Label curveThickLabel;
-        zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
-        juce::Label defaultPassFilterSlopeLabel;
-        zlInterface::CompactCombobox defaultPassFilterSlopeBox;
-        juce::Label dynLinkLabel;
-        zlInterface::CompactCombobox dynLinkBox;
-        juce::Label tooltipLabel;
-        zlInterface::CompactCombobox tooltipONBox, tooltipLangBox;
+        juce::Label rendering_engine_label_;
+        zlgui::CompactCombobox rendering_engine_box_;
+        juce::Label refresh_rate_label_;
+        zlgui::CompactCombobox refresh_rate_box_;
+        juce::Label fft_label_;
+        zlgui::CompactLinearSlider fft_tilt_slider_, fft_speed_slider_;
+        zlgui::CompactCombobox fft_order_box_;
+        juce::Label curve_thick_label_;
+        zlgui::CompactLinearSlider single_curve_slider_, sum_curve_slider_;
+        juce::Label default_pass_filter_slope_label_;
+        zlgui::CompactCombobox default_pass_filter_slope_box_;
+        juce::Label dyn_link_label_;
+        zlgui::CompactCombobox dyn_link_box_;
+        juce::Label tooltip_label_;
+        zlgui::CompactCombobox tooltip_on_box_, tooltip_lang_box_;
     };
-} // zlPanel
+} // zlpanel

@@ -14,19 +14,19 @@
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LinkButtonPanel final : public juce::Component,
                                   private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit LinkButtonPanel(size_t idx,
                                  juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base,
-                                 zlInterface::Dragger &sideDragger);
+                                 juce::AudioProcessorValueTreeState &parameters_NA,
+                                 zlgui::UIBase &base,
+                                 zlgui::Dragger &side_dragger);
 
         ~LinkButtonPanel() override;
 
-        zlInterface::CompactButton &getButton() { return dynLinkC; }
+        zlgui::CompactButton &getButton() { return dyn_link_c_; }
 
         void updateBound();
 
@@ -35,21 +35,21 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::Dragger &sideDraggerRef;
-        zlInterface::CompactButton dynLinkC;
-        float buttonSize{}, buttonBottom{};
-        std::atomic<bool> buttonChanged{false};
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
-        const std::unique_ptr<juce::Drawable> linkDrawable;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        zlgui::Dragger &side_dragger_ref_;
+        zlgui::CompactButton dyn_link_c_;
+        float button_size_{}, button_bottom_{};
+        std::atomic<bool> button_changed_{false};
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > button_attachments_;
+        const std::unique_ptr<juce::Drawable> link_drawable_;
 
-        std::atomic<size_t> bandIdx;
-        std::atomic<bool> isDynamicON{false}, isSelected{false};
+        std::atomic<size_t> band_idx_;
+        std::atomic<bool> is_dynamic_on_{false}, is_selected_{false};
 
-        constexpr static std::array IDs{zlDSP::dynamicON::ID};
-        constexpr static std::array NAIDs{zlState::selectedBandIdx::ID};
+        constexpr static std::array kIDs{zlp::dynamicON::ID};
+        constexpr static std::array kNAIDs{zlstate::selectedBandIdx::ID};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
     };
-} // zlPanel
+} // zlpanel

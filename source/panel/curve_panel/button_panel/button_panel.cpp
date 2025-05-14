@@ -9,204 +9,204 @@
 
 #include "button_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     ButtonPanel::ButtonPanel(PluginProcessor &processor,
-                             zlInterface::UIBase &base)
-        : processorRef(processor),
-          parametersRef(processor.parameters), parametersNARef(processor.parametersNA),
-          uiBase(base), controllerRef(processor.getController()),
-          wheelSlider{
-              zlInterface::SnappingSlider{base},
-              zlInterface::SnappingSlider{base},
-              zlInterface::SnappingSlider{base}
+                             zlgui::UIBase &base)
+        : processor_ref_(processor),
+          parameters_ref_(processor.parameters_), parameters_NA_ref_(processor.parameters_NA_),
+          ui_base_(base), controller_ref_(processor.getController()),
+          wheel_slider_{
+              zlgui::SnappingSlider{base},
+              zlgui::SnappingSlider{base},
+              zlgui::SnappingSlider{base}
           } {
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto suffix = zlDSP::appendSuffix("", i);
-            freqUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::freq::ID + suffix);
-            gainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::gain::ID + suffix);
-            QUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::Q::ID + suffix);
-            targetGainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::targetGain::ID + suffix);
-            targetQUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::targetQ::ID + suffix);
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            const auto suffix = zlp::appendSuffix("", i);
+            freq_updaters_[i] = std::make_unique<zldsp::chore::ParaUpdater>(
+                parameters_ref_, zlp::freq::ID + suffix);
+            gain_updaters_[i] = std::make_unique<zldsp::chore::ParaUpdater>(
+                parameters_ref_, zlp::gain::ID + suffix);
+            q_updaters_[i] = std::make_unique<zldsp::chore::ParaUpdater>(
+                parameters_ref_, zlp::Q::ID + suffix);
+            target_gain_updaters_[i] = std::make_unique<zldsp::chore::ParaUpdater>(
+                parameters_ref_, zlp::targetGain::ID + suffix);
+            target_q_updaters_[i] = std::make_unique<zldsp::chore::ParaUpdater>(
+                parameters_ref_, zlp::targetQ::ID + suffix);
         }
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            panels[i] = std::make_unique<FilterButtonPanel>(i, processorRef, base);
-            linkButtons[i] = std::make_unique<LinkButtonPanel>(
-                i, parametersRef, parametersNARef, base, panels[i]->getSideDragger());
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            panels_[i] = std::make_unique<FilterButtonPanel>(i, processor_ref_, base);
+            link_buttons_[i] = std::make_unique<LinkButtonPanel>(
+                i, parameters_ref_, parameters_NA_ref_, base, panels_[i]->getSideDragger());
             // when main dragger is clicked, de-select target & side dragger
-            panels[i]->getDragger().getButton().onStateChange = [this]() {
-                const auto idx = selectBandIdx.load();
-                if (panels[idx]->getDragger().getButton().getToggleState()) {
-                    panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
-                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+            panels_[i]->getDragger().getButton().onStateChange = [this]() {
+                const auto idx = band_idx_.load();
+                if (panels_[idx]->getDragger().getButton().getToggleState()) {
+                    panels_[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels_[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
             // when main dragger is clicked, de-select target & side dragger
-            panels[i]->getTargetDragger().getButton().onStateChange = [this]() {
-                const auto idx = selectBandIdx.load();
-                if (panels[idx]->getTargetDragger().getButton().getToggleState()) {
-                    panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
-                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+            panels_[i]->getTargetDragger().getButton().onStateChange = [this]() {
+                const auto idx = band_idx_.load();
+                if (panels_[idx]->getTargetDragger().getButton().getToggleState()) {
+                    panels_[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels_[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
             // when side dragger is clicked, de-select main & side dragger
-            panels[i]->getSideDragger().getButton().onStateChange = [this]() {
-                const auto idx = selectBandIdx.load();
-                if (panels[idx]->getSideDragger().getButton().getToggleState()) {
-                    panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
-                    panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+            panels_[i]->getSideDragger().getButton().onStateChange = [this]() {
+                const auto idx = band_idx_.load();
+                if (panels_[idx]->getSideDragger().getButton().getToggleState()) {
+                    panels_[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels_[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
             // deselect the side dragger when link button is clicked
-            linkButtons[i]->getButton().getButton().onClick = [this]() {
-                const auto idx = selectBandIdx.load();
-                if (linkButtons[idx]->getButton().getButton().getToggleState()) {
-                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+            link_buttons_[i]->getButton().getButton().onClick = [this]() {
+                const auto idx = band_idx_.load();
+                if (link_buttons_[idx]->getButton().getButton().getToggleState()) {
+                    panels_[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
-            panels[i]->addMouseListener(this, true);
+            panels_[i]->addMouseListener(this, true);
         }
-        for (const auto &idx: NAIDs) {
-            parametersNARef.addParameterListener(idx, this);
-            parameterChanged(idx, parametersNARef.getRawParameterValue(idx)->load());
+        for (const auto &idx: kNAIDs) {
+            parameters_NA_ref_.addParameterListener(idx, this);
+            parameterChanged(idx, parameters_NA_ref_.getRawParameterValue(idx)->load());
         }
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            addChildComponent(panels[i].get());
-            addChildComponent(linkButtons[i].get());
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            addChildComponent(panels_[i].get());
+            addChildComponent(link_buttons_[i].get());
         }
-        addAndMakeVisible(lassoComponent);
-        itemsSet.addChangeListener(this);
+        addAndMakeVisible(lasso_component_);
+        items_set_.addChangeListener(this);
     }
 
     ButtonPanel::~ButtonPanel() {
-        for (const auto &idx: NAIDs) {
-            parametersNARef.removeParameterListener(idx, this);
+        for (const auto &idx: kNAIDs) {
+            parameters_NA_ref_.removeParameterListener(idx, this);
         }
-        for (size_t tempIdx = 0; tempIdx < panels.size(); ++tempIdx) {
-            for (const auto &idx: IDs) {
-                const auto actualIdx = zlDSP::appendSuffix(idx, tempIdx);
-                parametersRef.removeParameterListener(actualIdx, this);
+        for (size_t tempIdx = 0; tempIdx < panels_.size(); ++tempIdx) {
+            for (const auto &idx: kIDs) {
+                const auto actualIdx = zlp::appendSuffix(idx, tempIdx);
+                parameters_ref_.removeParameterListener(actualIdx, this);
             }
         }
-        itemsSet.removeChangeListener(this);
-        wheelAttachment[0].reset();
-        wheelAttachment[1].reset();
-        wheelAttachment[2].reset();
+        items_set_.removeChangeListener(this);
+        wheel_attachment_[0].reset();
+        wheel_attachment_[1].reset();
+        wheel_attachment_[2].reset();
 
         stopTimer();
     }
 
     void ButtonPanel::paint(juce::Graphics &g) {
-        if (uiBase.getColourByIdx(zlInterface::tagColour).getFloatAlpha() < 0.01f) {
+        if (ui_base_.getColourByIdx(zlgui::kTagColour).getFloatAlpha() < 0.01f) {
             return;
         }
-        const auto idx = selectBandIdx.load();
-        const auto &p = panels[idx];
+        const auto idx = band_idx_.load();
+        const auto &p = panels_[idx];
         if (!p->isVisible()) {
             return;
         }
         const auto bound = p->getDragger().getButtonArea();
-        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        g.setFont(ui_base_.getFontSize() * zlgui::kFontLarge);
         if (p->getDragger().getButton().getToggleState()) {
-            const auto &f{controllerRef.getBaseFilter(idx)};
-            const auto buttonC = p->getDragger().getButtonPos();
-            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
-            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
-            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
+            const auto &f{controller_ref_.getBaseFilter(idx)};
+            const auto button_c = p->getDragger().getButtonPos();
+            const auto freq_p = (button_c.getX() - bound.getX()) / bound.getWidth();
+            const auto gain_p = (button_c.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freq_p, gain_p, getLocalBounds().toFloat());
         } else if (p->getTargetDragger().getButton().getToggleState()) {
-            const auto &f{controllerRef.getTargetFilter(idx)};
-            const auto buttonC = p->getDragger().getButtonPos();
-            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
-            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
-            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
+            const auto &f{controller_ref_.getTargetFilter(idx)};
+            const auto button_c = p->getDragger().getButtonPos();
+            const auto freq_p = (button_c.getX() - bound.getX()) / bound.getWidth();
+            const auto gain_p = (button_c.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freq_p, gain_p, getLocalBounds().toFloat());
         } else if (p->getSideDragger().getButton().getToggleState()) {
-            const auto &f{controllerRef.getFilter(idx).getSideFilter()};
-            const auto buttonC = p->getSideDragger().getButtonPos();
-            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
-            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
-            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
+            const auto &f{controller_ref_.getFilter(idx).getSideFilter()};
+            const auto button_c = p->getSideDragger().getButtonPos();
+            const auto freq_p = (button_c.getX() - bound.getX()) / bound.getWidth();
+            const auto gain_p = (button_c.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freq_p, gain_p, getLocalBounds().toFloat());
         }
     }
 
-    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::FilterType fType,
-                                      const float freqP, const float gainP, const juce::Rectangle<float> &bound) {
-        switch (fType) {
-            case zlFilter::FilterType::peak:
-            case zlFilter::FilterType::bandShelf: {
-                drawGain(g, gainP, bound, freqP < .5f);
+    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zldsp::filter::FilterType ftype,
+                                      const float freq_p, const float gain_p, const juce::Rectangle<float> &bound) {
+        switch (ftype) {
+            case zldsp::filter::FilterType::kPeak:
+            case zldsp::filter::FilterType::kBandShelf: {
+                drawGain(g, gain_p, bound, freq_p < .5f);
                 break;
             }
-            case zlFilter::FilterType::lowShelf: {
-                drawGain(g, gainP, bound, true);
+            case zldsp::filter::FilterType::kLowShelf: {
+                drawGain(g, gain_p, bound, true);
                 break;
             }
-            case zlFilter::FilterType::highShelf: {
-                drawGain(g, gainP, bound, false);
+            case zldsp::filter::FilterType::kHighShelf: {
+                drawGain(g, gain_p, bound, false);
                 break;
             }
-            case zlFilter::FilterType::tiltShelf: {
-                drawGain(g, gainP * .5f, bound, false);
+            case zldsp::filter::FilterType::kTiltShelf: {
+                drawGain(g, gain_p * .5f, bound, false);
                 break;
             }
-            case zlFilter::FilterType::notch:
-            case zlFilter::FilterType::lowPass:
-            case zlFilter::FilterType::highPass:
-            case zlFilter::FilterType::bandPass: {
+            case zldsp::filter::FilterType::kNotch:
+            case zldsp::filter::FilterType::kLowPass:
+            case zldsp::filter::FilterType::kHighPass:
+            case zldsp::filter::FilterType::kBandPass: {
                 break;
             }
         }
-        drawFreq(g, freqP, bound, false);
+        drawFreq(g, freq_p, bound, false);
     }
 
-    void ButtonPanel::drawFreq(juce::Graphics &g, const float freqP, const juce::Rectangle<float> &bound,
-                               const bool isTop) {
-        juce::ignoreUnused(isTop);
-        const auto freq = std::exp(freqP * std::log(2000.f)) * 10.f;
-        const auto freqString = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
-        const auto p = std::clamp(freqP, 0.025f, 0.975f) * 0.9873247325443818f;
-        auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 5, uiBase.getFontSize() * 1.5f);
-        textBound = textBound.withCentre({bound.getWidth() * p, bound.getBottom() - 0.75f * uiBase.getFontSize()});
-        const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
-        g.setColour(uiBase.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
-        g.fillRect(textBound);
+    void ButtonPanel::drawFreq(juce::Graphics &g, const float freq_p, const juce::Rectangle<float> &bound,
+                               const bool is_top) {
+        juce::ignoreUnused(is_top);
+        const auto freq = std::exp(freq_p * std::log(2000.f)) * 10.f;
+        const auto freq_string = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
+        const auto p = std::clamp(freq_p, 0.025f, 0.975f) * 0.9873247325443818f;
+        auto text_bound = juce::Rectangle<float>(ui_base_.getFontSize() * 5, ui_base_.getFontSize() * 1.5f);
+        text_bound = text_bound.withCentre({bound.getWidth() * p, bound.getBottom() - 0.75f * ui_base_.getFontSize()});
+        const auto colour = ui_base_.getColourByIdx(zlgui::kTagColour);
+        g.setColour(ui_base_.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
+        g.fillRect(text_bound);
         g.setColour(colour);
-        g.drawText(freqString, textBound, juce::Justification::centredBottom, false);
+        g.drawText(freq_string, text_bound, juce::Justification::centredBottom, false);
     }
 
-    void ButtonPanel::drawGain(juce::Graphics &g, const float gainP, const juce::Rectangle<float> &bound,
-                               const bool isLeft) {
-        const auto gain = (-2.f * gainP + 1.f) * maximumDB.load();
-        const auto tempBound = bound.withSizeKeepingCentre(bound.getWidth(),
-                                                           bound.getHeight() - 2 * uiBase.getFontSize());
-        const auto gString = std::abs(gain) < 10 ? juce::String(gain, 2, false) : juce::String(gain, 1, false);
-        auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 2.7f, uiBase.getFontSize() * 1.5f);
-        if (isLeft) {
-            textBound = textBound.withCentre({
-                uiBase.getFontSize() * 1.35f,
-                tempBound.getY() + gainP * tempBound.getHeight()
+    void ButtonPanel::drawGain(juce::Graphics &g, const float gain_p, const juce::Rectangle<float> &bound,
+                               const bool is_left) {
+        const auto gain = (-2.f * gain_p + 1.f) * maximum_db_.load();
+        const auto temp_bound = bound.withSizeKeepingCentre(bound.getWidth(),
+                                                           bound.getHeight() - 2 * ui_base_.getFontSize());
+        const auto gain_string = std::abs(gain) < 10 ? juce::String(gain, 2, false) : juce::String(gain, 1, false);
+        auto text_bound = juce::Rectangle<float>(ui_base_.getFontSize() * 2.7f, ui_base_.getFontSize() * 1.5f);
+        if (is_left) {
+            text_bound = text_bound.withCentre({
+                ui_base_.getFontSize() * 1.35f,
+                temp_bound.getY() + gain_p * temp_bound.getHeight()
             });
         } else {
-            textBound = textBound.withCentre({
-                tempBound.getRight() - uiBase.getFontSize() * 1.35f,
-                tempBound.getY() + gainP * tempBound.getHeight()
+            text_bound = text_bound.withCentre({
+                temp_bound.getRight() - ui_base_.getFontSize() * 1.35f,
+                temp_bound.getY() + gain_p * temp_bound.getHeight()
             });
         }
-        const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
-        g.setColour(uiBase.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
-        g.fillRect(textBound);
+        const auto colour = ui_base_.getColourByIdx(zlgui::kTagColour);
+        g.setColour(ui_base_.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
+        g.fillRect(text_bound);
         g.setColour(colour);
-        g.drawText(gString, textBound, juce::Justification::centred, false);
+        g.drawText(gain_string, text_bound, juce::Justification::centred, false);
     }
 
     void ButtonPanel::resized() {
-        for (const auto &p: panels) {
+        for (const auto &p: panels_) {
             p->setBounds(getLocalBounds());
         }
-        for (const auto &p: linkButtons) {
+        for (const auto &p: link_buttons_) {
             p->setBounds(getLocalBounds());
         }
     }
@@ -222,42 +222,42 @@ namespace zlPanel {
     }
 
     void ButtonPanel::timerCallback() {
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
         stopTimer();
     }
 
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
         if (event.originalComponent != this) {
-            isLeftClick.store(!event.mods.isRightButtonDown());
+            is_left_click_.store(!event.mods.isRightButtonDown());
             return;
         }
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            panels[i]->setSelected(false);
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            panels_[i]->setSelected(false);
         }
 
-        itemsSet.deselectAll();
-        previousLassoNum = 0;
-        lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
-                                 uiBase.getTextColor().withMultipliedAlpha(.25f));
-        lassoComponent.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
-                                 uiBase.getTextColor().withMultipliedAlpha(.375f));
-        lassoComponent.setVisible(true);
-        lassoComponent.beginLasso(event, this);
+        items_set_.deselectAll();
+        previous_lasso_num_ = 0;
+        lasso_component_.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
+                                 ui_base_.getTextColor().withMultipliedAlpha(.25f));
+        lasso_component_.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
+                                 ui_base_.getTextColor().withMultipliedAlpha(.375f));
+        lasso_component_.setVisible(true);
+        lasso_component_.beginLasso(event, this);
     }
 
     void ButtonPanel::mouseUp(const juce::MouseEvent &event) {
         if (event.originalComponent != this) {
             return;
         }
-        lassoComponent.endLasso();
+        lasso_component_.endLasso();
     }
 
     void ButtonPanel::mouseDrag(const juce::MouseEvent &event) {
         if (event.originalComponent != this) {
             return;
         }
-        lassoComponent.dragLasso(event);
+        lasso_component_.dragLasso(event);
     }
 
     void ButtonPanel::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
@@ -271,22 +271,22 @@ namespace zlPanel {
             event.getNumberOfClicks(), false
         };
         if (event.originalComponent == this) {
-            wheelSlider[0].mouseWheelMove(e, wheel);
-            wheelSlider[1].mouseWheelMove(e, wheel);
-        } else if (!panels[selectBandIdx.load()]->isParentOf(event.originalComponent)) {
-            wheelSlider[0].mouseWheelMove(e, wheel);
-            wheelSlider[1].mouseWheelMove(e, wheel);
+            wheel_slider_[0].mouseWheelMove(e, wheel);
+            wheel_slider_[1].mouseWheelMove(e, wheel);
+        } else if (!panels_[band_idx_.load()]->isParentOf(event.originalComponent)) {
+            wheel_slider_[0].mouseWheelMove(e, wheel);
+            wheel_slider_[1].mouseWheelMove(e, wheel);
         } else {
-            const auto &p = panels[selectBandIdx.load()];
+            const auto &p = panels_[band_idx_.load()];
             if (p.get()->getDragger().isParentOf(event.originalComponent)) {
-                wheelSlider[0].mouseWheelMove(e, wheel);
+                wheel_slider_[0].mouseWheelMove(e, wheel);
             } else if (p.get()->getTargetDragger().isParentOf(event.originalComponent)) {
-                wheelSlider[1].mouseWheelMove(e, wheel);
+                wheel_slider_[1].mouseWheelMove(e, wheel);
             } else if (p.get()->getSideDragger().isParentOf(event.originalComponent)) {
                 if (!p.get()->getSideDragger().getButton().getToggleState()) {
                     p.get()->getSideDragger().getButton().setToggleState(true, juce::sendNotificationSync);
                 }
-                wheelSlider[2].mouseWheelMove(e, wheel);
+                wheel_slider_[2].mouseWheelMove(e, wheel);
             }
         }
     }
@@ -296,171 +296,171 @@ namespace zlPanel {
             return;
         }
         const auto idx = findAvailableBand();
-        if (idx >= zlState::bandNUM) {
+        if (idx >= zlstate::kBandNUM) {
             return;
         }
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
         const auto point = event.getPosition().toFloat();
         const auto x = point.getX(), y = point.getY();
         const auto freq = xtoFreq(x, bound);
-        const auto db = yToDB(y, maximumDB.load(), bound);
+        const auto db = yToDB(y, maximum_db_.load(), bound);
 
-        std::vector<std::string> initIDs;
-        std::vector<float> initValues;
+        std::vector<std::string> init_IDs;
+        std::vector<float> init_values;
 
         if (freq < 20.f) {
-            initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::highPass));
-            initIDs.emplace_back(zlDSP::slope::ID);
-            initValues.emplace_back(zlDSP::slope::convertTo01(uiBase.getDefaultPassFilterSlope()));
+            init_IDs.emplace_back(zlp::fType::ID);
+            init_values.emplace_back(zlp::fType::convertTo01(zldsp::filter::FilterType::kHighPass));
+            init_IDs.emplace_back(zlp::slope::ID);
+            init_values.emplace_back(zlp::slope::convertTo01(ui_base_.getDefaultPassFilterSlope()));
         } else if (freq < 50.f) {
-            initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowShelf));
-            initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(
-                juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
+            init_IDs.emplace_back(zlp::fType::ID);
+            init_values.emplace_back(zlp::fType::convertTo01(zldsp::filter::FilterType::kLowShelf));
+            init_IDs.emplace_back(zlp::gain::ID);
+            init_values.emplace_back(zlp::gain::convertTo01(
+                juce::jlimit(-maximum_db_.load(), maximum_db_.load(), 2 * db)
             ));
         } else if (freq < 5000.f) {
-            initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::peak));
-            initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(
-                juce::jlimit(-maximumDB.load(), maximumDB.load(), db)
+            init_IDs.emplace_back(zlp::fType::ID);
+            init_values.emplace_back(zlp::fType::convertTo01(zldsp::filter::FilterType::kPeak));
+            init_IDs.emplace_back(zlp::gain::ID);
+            init_values.emplace_back(zlp::gain::convertTo01(
+                juce::jlimit(-maximum_db_.load(), maximum_db_.load(), db)
             ));
         } else if (freq < 15000.f) {
-            initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::highShelf));
-            initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(
-                juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
+            init_IDs.emplace_back(zlp::fType::ID);
+            init_values.emplace_back(zlp::fType::convertTo01(zldsp::filter::FilterType::kHighShelf));
+            init_IDs.emplace_back(zlp::gain::ID);
+            init_values.emplace_back(zlp::gain::convertTo01(
+                juce::jlimit(-maximum_db_.load(), maximum_db_.load(), 2 * db)
             ));
         } else {
-            initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowPass));
-            initIDs.emplace_back(zlDSP::slope::ID);
-            initValues.emplace_back(zlDSP::slope::convertTo01(uiBase.getDefaultPassFilterSlope()));
+            init_IDs.emplace_back(zlp::fType::ID);
+            init_values.emplace_back(zlp::fType::convertTo01(zldsp::filter::FilterType::kLowPass));
+            init_IDs.emplace_back(zlp::slope::ID);
+            init_values.emplace_back(zlp::slope::convertTo01(ui_base_.getDefaultPassFilterSlope()));
         }
-        initIDs.emplace_back(zlDSP::freq::ID);
-        initValues.emplace_back(zlDSP::freq::convertTo01(freq));
-        initIDs.emplace_back(zlDSP::Q::ID);
-        initValues.emplace_back(zlDSP::Q::convertTo01(zlDSP::Q::defaultV));
-        initIDs.emplace_back(zlDSP::bypass::ID);
-        initValues.emplace_back(zlDSP::bypass::convertTo01(false));
+        init_IDs.emplace_back(zlp::freq::ID);
+        init_values.emplace_back(zlp::freq::convertTo01(freq));
+        init_IDs.emplace_back(zlp::Q::ID);
+        init_values.emplace_back(zlp::Q::convertTo01(zlp::Q::defaultV));
+        init_IDs.emplace_back(zlp::bypass::ID);
+        init_values.emplace_back(zlp::bypass::convertTo01(false));
         // turn on dynamic is command is down
         if (event.mods.isCommandDown()) {
-            initIDs.emplace_back(zlDSP::dynamicON::ID);
-            initValues.emplace_back(zlDSP::dynamicON::convertTo01(true));
-            initIDs.emplace_back(zlDSP::singleDynLink::ID);
-            initValues.emplace_back(zlDSP::singleDynLink::convertTo01(uiBase.getDynLink()));
+            init_IDs.emplace_back(zlp::dynamicON::ID);
+            init_values.emplace_back(zlp::dynamicON::convertTo01(true));
+            init_IDs.emplace_back(zlp::singleDynLink::ID);
+            init_values.emplace_back(zlp::singleDynLink::convertTo01(ui_base_.getDynLink()));
         }
 
-        for (size_t i = 0; i < initIDs.size(); ++i) {
-            const auto paraID = zlDSP::appendSuffix(initIDs[i], idx);
-            auto *para = parametersRef.getParameter(paraID);
+        for (size_t i = 0; i < init_IDs.size(); ++i) {
+            const auto paraID = zlp::appendSuffix(init_IDs[i], idx);
+            auto *para = parameters_ref_.getParameter(paraID);
             para->beginChangeGesture();
-            para->setValueNotifyingHost(initValues[i]);
+            para->setValueNotifyingHost(init_values[i]);
             para->endChangeGesture();
         }
 
         if (event.mods.isCommandDown()) {
-            processorRef.getFiltersAttach().turnOnDynamic(idx);
+            processor_ref_.getFiltersAttach().turnOnDynamic(idx);
         }
 
-        if (idx != selectBandIdx.load()) {
-            auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
+        if (idx != band_idx_.load()) {
+            auto *para = parameters_NA_ref_.getParameter(zlstate::selectedBandIdx::ID);
             para->beginChangeGesture();
-            para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));
+            para->setValueNotifyingHost(zlstate::selectedBandIdx::convertTo01(static_cast<int>(idx)));
             para->endChangeGesture();
         } else {
-            toAttachGroup.store(true);
+            to_attach_group_.store(true);
         }
     }
 
-    void ButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID == zlState::selectedBandIdx::ID) {
-            const auto idx = static_cast<size_t>(newValue);
-            selectBandIdx.store(idx);
-            toAttachGroup.store(true);
-        } else if (parameterID == zlState::maximumDB::ID) {
-            const auto idx = static_cast<size_t>(newValue);
-            for (const auto &p: panels) {
-                p->setMaximumDB(zlState::maximumDB::dBs[idx]);
+    void ButtonPanel::parameterChanged(const juce::String &parameter_id, float new_value) {
+        if (parameter_id == zlstate::selectedBandIdx::ID) {
+            const auto idx = static_cast<size_t>(new_value);
+            band_idx_.store(idx);
+            to_attach_group_.store(true);
+        } else if (parameter_id == zlstate::maximumDB::ID) {
+            const auto idx = static_cast<size_t>(new_value);
+            for (const auto &p: panels_) {
+                p->setMaximumDB(zlstate::maximumDB::dBs[idx]);
             }
-            maximumDB.store(zlState::maximumDB::dBs[idx]);
+            maximum_db_.store(zlstate::maximumDB::dBs[idx]);
         } else {
             // the parameter is freq/gain/Q/targetGain/targetQ
-            if (!isDuringLasso.load()) return;
-            const auto currentBand = selectBandIdx.load();
-            if (!uiBase.getIsBandSelected(currentBand)) return;
-            const auto value = static_cast<double>(newValue);
-            if (parameterID.startsWith(zlDSP::freq::ID)) {
-                const auto ratio = static_cast<float>(value / previousFreqs[currentBand].load());
-                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                        const auto shiftFreq = previousFreqs[idx].load() * ratio;
-                        const auto legalFreq = zlDSP::freq::range.snapToLegalValue(shiftFreq);
-                        freqUpdaters[idx]->update(zlDSP::freq::range.convertTo0to1(legalFreq));
+            if (!is_during_lasso_.load()) return;
+            const auto current_band = band_idx_.load();
+            if (!ui_base_.getIsBandSelected(current_band)) return;
+            const auto value = static_cast<double>(new_value);
+            if (parameter_id.startsWith(zlp::freq::ID)) {
+                const auto ratio = static_cast<float>(value / previous_freqs_[current_band].load());
+                for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                    if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                        const auto shift_freq = previous_freqs_[idx].load() * ratio;
+                        const auto legal_freq = zlp::freq::range.snapToLegalValue(shift_freq);
+                        freq_updaters_[idx]->update(zlp::freq::range.convertTo0to1(legal_freq));
                     }
                 }
-            } else if (parameterID.startsWith(zlDSP::gain::ID)) {
-                if (isLeftClick.load()) {
-                    if (std::abs(previousGains[currentBand].load()) <= 0.1f) return;
-                    const auto scale = newValue / previousGains[currentBand].load();
-                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            const auto shiftGain = scale * previousGains[idx].load();
-                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            gainUpdaters[idx]->update(zlDSP::gain::convertTo01(legalGain));
+            } else if (parameter_id.startsWith(zlp::gain::ID)) {
+                if (is_left_click_.load()) {
+                    if (std::abs(previous_gains_[current_band].load()) <= 0.1f) return;
+                    const auto scale = new_value / previous_gains_[current_band].load();
+                    for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                        if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                            const auto shift_gain = scale * previous_gains_[idx].load();
+                            const auto legal_gain = juce::jlimit(-maximum_db_.load(), maximum_db_.load(), shift_gain);
+                            gain_updaters_[idx]->update(zlp::gain::convertTo01(legal_gain));
                         }
                     }
                 } else {
-                    const auto shift = newValue - previousGains[currentBand].load();
-                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            const auto shiftGain = shift + previousGains[idx].load();
-                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            gainUpdaters[idx]->update(zlDSP::gain::convertTo01(legalGain));
+                    const auto shift = new_value - previous_gains_[current_band].load();
+                    for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                        if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                            const auto shift_gain = shift + previous_gains_[idx].load();
+                            const auto legal_gain = juce::jlimit(-maximum_db_.load(), maximum_db_.load(), shift_gain);
+                            gain_updaters_[idx]->update(zlp::gain::convertTo01(legal_gain));
                         }
                     }
                 }
-            } else if (parameterID.startsWith(zlDSP::Q::ID)) {
-                const auto ratio = static_cast<float>(value / previousQs[currentBand].load());
-                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                        const auto shiftQ = ratio * previousQs[idx].load();
-                        const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
-                        QUpdaters[idx]->update(zlDSP::Q::range.convertTo0to1(legalQ));
+            } else if (parameter_id.startsWith(zlp::Q::ID)) {
+                const auto ratio = static_cast<float>(value / previous_qs_[current_band].load());
+                for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                    if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                        const auto shift_q = ratio * previous_qs_[idx].load();
+                        const auto legal_q = zlp::Q::range.snapToLegalValue(shift_q);
+                        q_updaters_[idx]->update(zlp::Q::range.convertTo0to1(legal_q));
                     }
                 }
-            } else if (parameterID.startsWith(zlDSP::targetGain::ID)) {
-                if (isLeftClick.load()) {
-                    if (std::abs(previousTargetGains[currentBand].load()) <= 0.1f) return;
-                    const auto scale = newValue / previousTargetGains[currentBand].load();
-                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            const auto shiftGain = scale * previousTargetGains[idx].load();
-                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            targetGainUpdaters[idx]->update(zlDSP::targetGain::convertTo01(legalGain));
+            } else if (parameter_id.startsWith(zlp::targetGain::ID)) {
+                if (is_left_click_.load()) {
+                    if (std::abs(previous_target_gains_[current_band].load()) <= 0.1f) return;
+                    const auto scale = new_value / previous_target_gains_[current_band].load();
+                    for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                        if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                            const auto shift_gain = scale * previous_target_gains_[idx].load();
+                            const auto legal_gain = juce::jlimit(-maximum_db_.load(), maximum_db_.load(), shift_gain);
+                            target_gain_updaters_[idx]->update(zlp::targetGain::convertTo01(legal_gain));
                         }
                     }
                 } else {
-                    const auto shift = newValue - previousTargetGains[currentBand].load();
-                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            const auto shiftGain = shift + previousTargetGains[idx].load();
-                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            targetGainUpdaters[idx]->update(zlDSP::targetGain::convertTo01(legalGain));
+                    const auto shift = new_value - previous_target_gains_[current_band].load();
+                    for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                        if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                            const auto shift_gain = shift + previous_target_gains_[idx].load();
+                            const auto legal_gain = juce::jlimit(-maximum_db_.load(), maximum_db_.load(), shift_gain);
+                            target_gain_updaters_[idx]->update(zlp::targetGain::convertTo01(legal_gain));
                         }
                     }
                 }
-            } else if (parameterID.startsWith(zlDSP::targetQ::ID)) {
-                const auto ratio = static_cast<float>(value / previousTargetQs[currentBand].load());
-                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                        const auto shiftQ = ratio * previousTargetQs[idx].load();
-                        const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
-                        targetQUpdaters[idx]->update(zlDSP::targetQ::range.convertTo0to1(legalQ));
+            } else if (parameter_id.startsWith(zlp::targetQ::ID)) {
+                const auto ratio = static_cast<float>(value / previous_target_qs_[current_band].load());
+                for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
+                    if (idx != current_band && ui_base_.getIsBandSelected(idx)) {
+                        const auto shift_q = ratio * previous_target_qs_[idx].load();
+                        const auto legal_q = zlp::Q::range.snapToLegalValue(shift_q);
+                        target_q_updaters_[idx]->update(zlp::targetQ::range.convertTo0to1(legal_q));
                     }
                 }
             }
@@ -469,112 +469,112 @@ namespace zlPanel {
 
     void ButtonPanel::attachGroup(const size_t idx) {
         loadPreviousParameters();
-        for (size_t oldIdx = 0; oldIdx < zlState::bandNUM; ++oldIdx) {
-            for (const auto &parameter: IDs) {
-                parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
+        for (size_t oldIdx = 0; oldIdx < zlstate::kBandNUM; ++oldIdx) {
+            for (const auto &parameter: kIDs) {
+                parameters_ref_.removeParameterListener(zlp::appendSuffix(parameter, oldIdx), this);
             }
         }
-        for (const auto &parameter: IDs) {
-            parametersRef.addParameterListener(zlDSP::appendSuffix(parameter, idx), this);
+        for (const auto &parameter: kIDs) {
+            parameters_ref_.addParameterListener(zlp::appendSuffix(parameter, idx), this);
         }
     }
 
     void ButtonPanel::updateAttach() {
-        if (toAttachGroup.exchange(false)) {
-            const auto idx = selectBandIdx.load();
+        if (to_attach_group_.exchange(false)) {
+            const auto idx = band_idx_.load();
             attachGroup(idx);
-            for (size_t i = 0; i < zlState::bandNUM; ++i) {
-                panels[i]->setSelected(i == idx);
+            for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+                panels_[i]->setSelected(i == idx);
             }
-            panels[idx]->toFront(false);
-            wheelAttachment[0].reset();
-            wheelAttachment[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider[0]);
-            wheelAttachment[1].reset();
-            wheelAttachment[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider[1]);
-            wheelAttachment[2].reset();
-            wheelAttachment[2] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider[2]);
+            panels_[idx]->toFront(false);
+            wheel_attachment_[0].reset();
+            wheel_attachment_[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                parameters_ref_, zlp::appendSuffix(zlp::Q::ID, band_idx_.load()), wheel_slider_[0]);
+            wheel_attachment_[1].reset();
+            wheel_attachment_[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                parameters_ref_, zlp::appendSuffix(zlp::targetQ::ID, band_idx_.load()), wheel_slider_[1]);
+            wheel_attachment_[2].reset();
+            wheel_attachment_[2] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                parameters_ref_, zlp::appendSuffix(zlp::sideQ::ID, band_idx_.load()), wheel_slider_[2]);
         }
     }
 
     size_t ButtonPanel::findAvailableBand() const {
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto idx = zlState::appendSuffix(zlState::active::ID, i);
-            const auto isActive = parametersNARef.getRawParameterValue(idx)->load() > .5f;
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            const auto idx = zlstate::appendSuffix(zlstate::active::ID, i);
+            const auto isActive = parameters_NA_ref_.getRawParameterValue(idx)->load() > .5f;
             if (!isActive) { return i; }
         }
-        return zlState::bandNUM;
+        return zlstate::kBandNUM;
     }
 
-    void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) {
-        juce::ignoreUnused(itemsFound, area);
-        const auto floatArea = area.toFloat();
-        for (size_t idx = 0; idx < panels.size(); ++idx) {
-            if (panels[idx]->isVisible()) {
-                const auto transform = panels[idx]->getDragger().getButton().getTransform();
-                const auto dPosition = panels[idx]->getDragger().getPosition().toFloat();
-                const auto bCenter = dPosition.transformedBy(transform);
-                if (floatArea.contains(bCenter)) {
-                    itemsFound.add(idx);
+    void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &items_found, const juce::Rectangle<int> &area) {
+        juce::ignoreUnused(items_found, area);
+        const auto float_area = area.toFloat();
+        for (size_t idx = 0; idx < panels_.size(); ++idx) {
+            if (panels_[idx]->isVisible()) {
+                const auto transform = panels_[idx]->getDragger().getButton().getTransform();
+                const auto dragger_position = panels_[idx]->getDragger().getPosition().toFloat();
+                const auto b_center = dragger_position.transformedBy(transform);
+                if (float_area.contains(b_center)) {
+                    items_found.add(idx);
                 }
             }
         }
     }
 
     juce::SelectedItemSet<size_t> &ButtonPanel::getLassoSelection() {
-        return itemsSet;
+        return items_set_;
     }
 
     void ButtonPanel::changeListenerCallback(juce::ChangeBroadcaster *source) {
         juce::ignoreUnused(source);
-        int currentSelectedNum = 0;
-        size_t currentFirstSelectIdx = 0;
-        const auto currentBand = selectBandIdx.load();
-        bool isCurrentBandSelected = false;
-        for (size_t idx = 0; idx < panels.size(); ++idx) {
-            const auto f1 = itemsSet.isSelected(idx);
+        int current_selected_num = 0;
+        size_t current_first_select_idx = 0;
+        const auto c_band_idx = band_idx_.load();
+        bool is_current_band_selected = false;
+        for (size_t idx = 0; idx < panels_.size(); ++idx) {
+            const auto f1 = items_set_.isSelected(idx);
             if (f1) {
-                if (currentSelectedNum == 0) {
-                    currentFirstSelectIdx = idx;
+                if (current_selected_num == 0) {
+                    current_first_select_idx = idx;
                 }
-                if (idx == currentBand) {
-                    isCurrentBandSelected = true;
+                if (idx == c_band_idx) {
+                    is_current_band_selected = true;
                 }
-                currentSelectedNum += 1;
+                current_selected_num += 1;
             }
-            uiBase.setIsBandSelected(idx, f1);
-            const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
+            ui_base_.setIsBandSelected(idx, f1);
+            const auto f2 = panels_[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
-                panels[idx]->getDragger().getLAF().setIsSelected(f1);
-                panels[idx]->getDragger().getButton().repaint();
+                panels_[idx]->getDragger().getLAF().setIsSelected(f1);
+                panels_[idx]->getDragger().getButton().repaint();
             }
         }
-        if (currentSelectedNum > 0) {
-            if (previousLassoNum == 0 || !isCurrentBandSelected) {
-                panels[currentFirstSelectIdx]->setSelected(true);
+        if (current_selected_num > 0) {
+            if (previous_lasso_num_ == 0 || !is_current_band_selected) {
+                panels_[current_first_select_idx]->setSelected(true);
             }
-            previousLassoNum = currentSelectedNum;
+            previous_lasso_num_ = current_selected_num;
             loadPreviousParameters();
-            isDuringLasso.store(true);
+            is_during_lasso_.store(true);
         } else {
-            isDuringLasso.store(false);
+            is_during_lasso_.store(false);
         }
     }
 
     void ButtonPanel::loadPreviousParameters() {
-        for (size_t idx = 0; idx < panels.size(); ++idx) {
-            previousFreqs[idx].store(zlDSP::freq::range.convertFrom0to1(
-                freqUpdaters[idx]->getPara()->getValue()));
-            previousGains[idx].store(zlDSP::gain::range.convertFrom0to1(
-                gainUpdaters[idx]->getPara()->getValue()));
-            previousQs[idx].store(zlDSP::Q::range.convertFrom0to1(
-                QUpdaters[idx]->getPara()->getValue()));
-            previousTargetGains[idx].store(zlDSP::targetGain::range.convertFrom0to1(
-                targetGainUpdaters[idx]->getPara()->getValue()));
-            previousTargetQs[idx].store(zlDSP::targetQ::range.convertFrom0to1(
-                targetQUpdaters[idx]->getPara()->getValue()));
+        for (size_t idx = 0; idx < panels_.size(); ++idx) {
+            previous_freqs_[idx].store(zlp::freq::range.convertFrom0to1(
+                freq_updaters_[idx]->getPara()->getValue()));
+            previous_gains_[idx].store(zlp::gain::range.convertFrom0to1(
+                gain_updaters_[idx]->getPara()->getValue()));
+            previous_qs_[idx].store(zlp::Q::range.convertFrom0to1(
+                q_updaters_[idx]->getPara()->getValue()));
+            previous_target_gains_[idx].store(zlp::targetGain::range.convertFrom0to1(
+                target_gain_updaters_[idx]->getPara()->getValue()));
+            previous_target_qs_[idx].store(zlp::targetQ::range.convertFrom0to1(
+                target_q_updaters_[idx]->getPara()->getValue()));
         }
     }
-} // zlPanel
+} // zlpanel

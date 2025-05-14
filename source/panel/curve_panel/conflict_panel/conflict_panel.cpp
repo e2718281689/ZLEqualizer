@@ -9,24 +9,24 @@
 
 #include "conflict_panel.hpp"
 
-namespace zlPanel {
-    ConflictPanel::ConflictPanel(zlFFTAnalyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
-        : analyzer(conflictAnalyzer), uiBase(base) {
-        analyzer.start();
+namespace zlpanel {
+    ConflictPanel::ConflictPanel(zldsp::analyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlgui::UIBase &base)
+        : analyzer_ref_(conflictAnalyzer), ui_base_(base) {
+        analyzer_ref_.start();
         setInterceptsMouseClicks(false, false);
-        juce::ignoreUnused(uiBase);
+        juce::ignoreUnused(ui_base_);
     }
 
     ConflictPanel::~ConflictPanel() {
-        analyzer.stop();
+        analyzer_ref_.stop();
     }
 
     void ConflictPanel::paint(juce::Graphics &g) {
-        g.setGradientFill(gradient);
+        g.setGradientFill(gradient_);
         g.fillRect(getLocalBounds());
     }
 
     void ConflictPanel::resized() {
-        analyzer.setLeftRight(0.f, static_cast<float>(getRight()));
+        analyzer_ref_.setLeftRight(0.f, static_cast<float>(getRight()));
     }
-} // zlPanel
+} // zlpanel

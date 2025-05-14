@@ -9,18 +9,18 @@
 
 #include "match_panel.hpp"
 
-namespace zlPanel {
-    MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
-                           juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
-        : uiBase(base), matchAnalyzerPanel(analyzer, parametersNA, base) {
-        juce::ignoreUnused(analyzer, uiBase);
+namespace zlpanel {
+    MatchPanel::MatchPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
+                           juce::AudioProcessorValueTreeState &parameters_NA, zlgui::UIBase &base)
+        : ui_base_(base), match_analyzer_panel_(analyzer, parameters_NA, base) {
+        juce::ignoreUnused(analyzer, ui_base_);
         setInterceptsMouseClicks(true, false);
-        addChildComponent(matchAnalyzerPanel);
+        addChildComponent(match_analyzer_panel_);
     }
 
     MatchPanel::~MatchPanel() = default;
 
     void MatchPanel::resized() {
-        matchAnalyzerPanel.setBounds(getLocalBounds());
+        match_analyzer_panel_.setBounds(getLocalBounds());
     }
-} // zlPanel
+} // zlpanel

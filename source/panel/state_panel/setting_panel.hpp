@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SettingPanel final : public juce::Component,
                                private juce::MultiTimer, private juce::ValueTree::Listener {
     public:
-        explicit SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                              const juce::String &label, zlInterface::boxIdx idx);
+        explicit SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
+                              const juce::String &label, zlgui::BoxIdx idx);
 
         ~SettingPanel() override;
 
@@ -30,14 +30,14 @@ namespace zlPanel {
         void mouseExit(const juce::MouseEvent &event) override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        juce::String name;
-        zlInterface::boxIdx mIdx;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::String setting_name_;
+        zlgui::BoxIdx box_idx_;
 
         void timerCallback(int timerID) override;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
     };
-} // zlPanel
+} // zlpanel

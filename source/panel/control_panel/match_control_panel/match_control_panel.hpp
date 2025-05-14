@@ -16,11 +16,11 @@
 #include "../../panel_definitons.hpp"
 #include "match_runner.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchControlPanel final : public juce::Component,
                                     private juce::ValueTree::Listener {
     public:
-        explicit MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit MatchControlPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~MatchControlPanel() override;
 
@@ -29,22 +29,22 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        zlInterface::UIBase &uiBase;
-        zlEqMatch::EqMatchAnalyzer<double> &analyzer;
+        zlgui::UIBase &ui_base_;
+        zldsp::eq_match::EqMatchAnalyzer<double> &analyzer_;
 
-        const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
+        const std::unique_ptr<juce::Drawable> start_drawable_, pause_drawable_, save_drawable_;
 
-        zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;
-        zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
-        zlInterface::CompactLinearSlider numBandSlider;
-        zlInterface::ClickButton learnButton, saveButton, fitButton;
+        zlgui::CompactCombobox side_choose_box_, fit_algo_box_;
+        zlgui::CompactLinearSlider weight_slider_, smooth_slider_, slope_slider_;
+        zlgui::CompactLinearSlider num_band_slider_;
+        zlgui::ClickButton learn_button_, save_button_, fit_button_;
 
-        juce::Rectangle<int> internalBound;
+        juce::Rectangle<int> internal_bound_;
 
-        MatchRunner matchRunner;
+        MatchRunner match_runner_;
 
-        std::unique_ptr<juce::FileChooser> myChooser;
-        inline auto static const presetDirectory =
+        std::unique_ptr<juce::FileChooser> chooser_;
+        inline auto static const kPresetDirectory =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
                 .getChildFile("Audio")
                 .getChildFile("Presets")
@@ -54,11 +54,11 @@ namespace zlPanel {
 
         void resetDefault();
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
 
         void loadFromPreset();
 
         void saveToPreset();
     };
-} // zlPanel
+} // zlpanel

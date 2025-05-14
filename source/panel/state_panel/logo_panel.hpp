@@ -13,11 +13,11 @@
 #include "../../PluginProcessor.hpp"
 #include "../ui_setting_panel/ui_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LogoPanel final : public juce::Component, public juce::SettableTooltipClient {
     public:
         explicit LogoPanel(PluginProcessor &p,
-                           zlInterface::UIBase &base,
+                           zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel);
 
         void paint(juce::Graphics &g) override;
@@ -27,10 +27,10 @@ namespace zlPanel {
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
     private:
-        juce::AudioProcessorValueTreeState &stateRef;
-        zlInterface::UIBase &uiBase;
-        UISettingPanel &panelToShow;
-        const std::unique_ptr<juce::Drawable> brandDrawable, logoDrawable;
-        juce::Justification justification{juce::Justification::topLeft};
+        juce::AudioProcessorValueTreeState &state_ref_;
+        zlgui::UIBase &ui_base_;
+        UISettingPanel &panel_to_show_;
+        const std::unique_ptr<juce::Drawable> brand_drawable_, logo_drawable_;
+        juce::Justification justification_{juce::Justification::topLeft};
     };
-} // zlPanel
+} // zlpanel

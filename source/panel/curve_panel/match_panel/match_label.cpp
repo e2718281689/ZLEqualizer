@@ -9,24 +9,24 @@
 
 #include "match_label.hpp"
 
-namespace zlPanel {
-    MatchLabel::MatchLabel(zlInterface::UIBase &base)
-        : uiBase(base), labelLAF(base) {
-        runningLabel.setText("Running", juce::dontSendNotification);
-        runningLabel.setJustificationType(juce::Justification::centred);
-        labelLAF.setFontScale(5.f);
-        runningLabel.setLookAndFeel(&labelLAF);
-        addAndMakeVisible(runningLabel);
+namespace zlpanel {
+    MatchLabel::MatchLabel(zlgui::UIBase &base)
+        : ui_base_(base), label_laf_(base) {
+        running_label_.setText("Running", juce::dontSendNotification);
+        running_label_.setJustificationType(juce::Justification::centred);
+        label_laf_.setFontScale(5.f);
+        running_label_.setLookAndFeel(&label_laf_);
+        addAndMakeVisible(running_label_);
         setBufferedToImage(true);
     }
 
     void MatchLabel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.75f));
+        g.fillAll(ui_base_.getColourByIdx(zlgui::kBackgroundColour).withAlpha(.75f));
     }
 
     void MatchLabel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        runningLabel.setBounds(bound.withSizeKeepingCentre(
-            bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
+        running_label_.setBounds(bound.withSizeKeepingCentre(
+            bound.getWidth() * .5f, ui_base_.getFontSize() * 5.f).toNearestInt());
     }
-} // zlPanel
+} // zlpanel

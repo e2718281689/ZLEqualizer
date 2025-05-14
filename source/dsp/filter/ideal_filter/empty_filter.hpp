@@ -12,7 +12,7 @@
 #include "../filter_design/filter_design.hpp"
 #include <atomic>
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an empty filter which holds filter parameters
      * @tparam FloatType the float type of input audio buffer
@@ -71,6 +71,6 @@ namespace zlFilter {
         std::atomic<size_t> filterNum{1}, order{2};
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
         std::atomic<double> fs{48000.0};
-        std::atomic<FilterType> filterType = FilterType::peak;
+        std::atomic<FilterType> filterType = FilterType::kPeak;
     };
 }

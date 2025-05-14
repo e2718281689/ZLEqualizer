@@ -11,60 +11,60 @@
 #include "../../state/state.hpp"
 #include "../panel_definitons.hpp"
 
-namespace zlPanel {
-    SettingPanel::SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                               const juce::String &label, zlInterface::boxIdx idx)
-        : parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
-          uiBase(base), name(label), mIdx(idx) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
+namespace zlpanel {
+    SettingPanel::SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
+                               const juce::String &label, zlgui::BoxIdx idx)
+        : parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
+          ui_base_(base), setting_name_(label), box_idx_(idx) {
+        juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         setBufferedToImage(true);
 
-        uiBase.getBoxTree().addListener(this);
+        ui_base_.getBoxTree().addListener(this);
     }
 
     SettingPanel::~SettingPanel() {
-        uiBase.getBoxTree().removeListener(this);
+        ui_base_.getBoxTree().removeListener(this);
         stopTimer(0);
         stopTimer(1);
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
-        const bool isBoxOpen = static_cast<bool>(uiBase.getBoxProperty(mIdx));
-        if (isBoxOpen) {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        const auto is_box_open = static_cast<bool>(ui_base_.getBoxProperty(box_idx_));
+        if (is_box_open) {
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
         }
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                 ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
-        g.setFont(uiBase.getFontSize() * 1.375f);
-        if (isBoxOpen) {
-            g.setColour(uiBase.getTextColor());
+        g.setFont(ui_base_.getFontSize() * 1.375f);
+        if (is_box_open) {
+            g.setColour(ui_base_.getTextColor());
         } else {
-            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+            g.setColour(ui_base_.getTextColor().withAlpha(.75f));
         }
-        g.drawText(name, bound, juce::Justification::centred);
+        g.drawText(setting_name_, bound, juce::Justification::centred);
     }
 
     void SettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         stopTimer(0);
         if (isTimerRunning(1)) return;
-        if (uiBase.getBoxProperty(mIdx)) {
-            uiBase.setBoxProperty(mIdx, false);
+        if (ui_base_.getBoxProperty(box_idx_)) {
+            ui_base_.setBoxProperty(box_idx_, false);
         } else {
-            uiBase.openOneBox(mIdx);
+            ui_base_.openOneBox(box_idx_);
         }
     }
 
     void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        if (!uiBase.getBoxProperty(mIdx)) {
+        if (!ui_base_.getBoxProperty(box_idx_)) {
             startTimer(0, 100);
             startTimer(1, 500);
         }
@@ -78,16 +78,16 @@ namespace zlPanel {
 
     void SettingPanel::timerCallback(const int timerID) {
         if (timerID == 0) {
-            uiBase.openOneBox(mIdx);
+            ui_base_.openOneBox(box_idx_);
             stopTimer(0);
         } else if (timerID == 1) {
             stopTimer(1);
         }
     }
 
-    void SettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+    void SettingPanel::valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                                 const juce::Identifier &property) {
-        juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlInterface::UIBase::isBoxProperty(mIdx, property)) repaint();
+        juce::ignoreUnused(tree_whose_property_has_changed);
+        if (zlgui::UIBase::isBoxProperty(box_idx_, property)) repaint();
     }
-} // zlPanel
+} // zlpanel

@@ -12,13 +12,13 @@
 #include "colour_selector.hpp"
 #include "../slider/slider.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ColourOpacitySelector final : public juce::Component,
                                         private juce::Slider::Listener {
     public:
-        explicit ColourOpacitySelector(zlInterface::UIBase &base, juce::Component &parent,
-                                       bool useOpacity = true,
-                                       float widthS = 12.f, float heightS = 10.f,
+        explicit ColourOpacitySelector(zlgui::UIBase &base, juce::Component &parent,
+                                       bool use_opacity = true,
+                                       float width_s = 12.f, float height_s = 10.f,
                                        float w1 = 0.3f, float w2 = 0.3f);
 
         ~ColourOpacitySelector() override;
@@ -26,21 +26,21 @@ namespace zlInterface {
         void resized() override;
 
         juce::Colour getColour() const {
-            return selector.getColour();
+            return selector_.getColour();
         }
 
         void setColour(const juce::Colour c) {
-            selector.setColour(c);
-            slider.getSlider().setValue(static_cast<double>(c.getFloatAlpha()));
+            selector_.setColour(c);
+            slider_.getSlider().setValue(static_cast<double>(c.getFloatAlpha()));
         }
 
     private:
-        zlInterface::UIBase &uiBase;
-        ColourSelector selector;
-        zlInterface::CompactLinearSlider slider;
-        bool opacityON;
-        std::array<float, 2> weights{};
+        zlgui::UIBase &ui_base_;
+        ColourSelector selector_;
+        zlgui::CompactLinearSlider slider_;
+        bool opacity_on_;
+        std::array<float, 2> weights_{};
 
         void sliderValueChanged(juce::Slider *s) override;
     };
-} // zlInterface
+} // zlgui

@@ -13,7 +13,7 @@
 
 #include "simple_histogram.hpp"
 
-namespace zlHistogram {
+namespace zldsp::histogram {
     template<typename FloatType, size_t Size>
     class AtomicHistogram {
     public:
@@ -23,20 +23,20 @@ namespace zlHistogram {
          * reset all counts
          */
         void reset(const FloatType x = FloatType(0)) {
-            syncCount = 0;
-            for (auto &hit: hits) {
+            sync_count_ = 0;
+            for (auto &hit: hits_) {
                 hit.store(x);
             }
         }
 
         void sync(Histogram<FloatType, Size> &simpleHist, const int syncMax = 1000) {
-            syncCount += 1;
-            if (syncCount > syncMax) {
-                const auto simpleHists = simpleHist.getHits();
-                for (size_t i = 0; i < hits.size(); ++i) {
-                    hits[i].store(simpleHists[i]);
+            sync_count_ += 1;
+            if (sync_count_ > syncMax) {
+                const auto simple_hists = simpleHist.getHits();
+                for (size_t i = 0; i < hits_.size(); ++i) {
+                    hits_[i].store(simple_hists[i]);
                 }
-                syncCount = 0;
+                sync_count_ = 0;
             }
         }
 
@@ -46,24 +46,24 @@ namespace zlHistogram {
          * @return
          */
         FloatType getPercentile(const FloatType x) const {
-            std::array<FloatType, Size> cumHits;
-            cumHits[0] = hits[0].load();
+            std::array<FloatType, Size> cum_hits;
+            cum_hits[0] = hits_[0].load();
             for (size_t i = 1; i < Size; ++i) {
-                cumHits[i] = cumHits[i - 1] + hits[i].load();
+                cum_hits[i] = cum_hits[i - 1] + hits_[i].load();
             }
-            const auto targetHits = x * cumHits.back();
-            auto it = std::lower_bound(cumHits.begin(), cumHits.end(), targetHits);
-            if (it != cumHits.end()) {
-                const auto i = static_cast<size_t>(std::distance(cumHits.begin(), it));
-                return static_cast<FloatType>(i) + (cumHits[i] - targetHits) / std::max(hits[i].load(), FloatType(1));
+            const auto target_hits = x * cum_hits.back();
+            auto it = std::lower_bound(cum_hits.begin(), cum_hits.end(), target_hits);
+            if (it != cum_hits.end()) {
+                const auto i = static_cast<size_t>(std::distance(cum_hits.begin(), it));
+                return static_cast<FloatType>(i) + (cum_hits[i] - target_hits) / std::max(hits_[i].load(), FloatType(1));
             } else {
                 return FloatType(1);
             }
         }
 
     private:
-        std::array<std::atomic<FloatType>, Size> hits;
-        FloatType decayRate{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
-        int syncCount{0};
+        std::array<std::atomic<FloatType>, Size> hits_;
+        FloatType decay_rate_{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
+        int sync_count_{0};
     };
 }

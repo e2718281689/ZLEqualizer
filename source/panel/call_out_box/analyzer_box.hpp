@@ -12,70 +12,70 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class AnalyzerBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
-        explicit AnalyzerBox(juce::AudioProcessorValueTreeState &parametersNA,
-                               zlInterface::UIBase &base)
-            : parametersNARef(parametersNA),
-              uiBase(base),
-              fftPreON("Pre:", zlState::fftPreON::choices, uiBase, zlInterface::multilingual::labels::fftPre),
-              fftPostON("Post:", zlState::fftPostON::choices, uiBase, zlInterface::multilingual::labels::fftPost),
-              fftSideON("Side:", zlState::fftSideON::choices, uiBase, zlInterface::multilingual::labels::fftSide),
-              ffTSpeed("", zlState::ffTSpeed::choices, uiBase, zlInterface::multilingual::labels::fftDecay),
-              fftTilt("", zlState::ffTTilt::choices, uiBase, zlInterface::multilingual::labels::fftSlope) {
-            for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
+        explicit AnalyzerBox(juce::AudioProcessorValueTreeState &parameters_NA,
+                               zlgui::UIBase &base)
+            : parameters_NA_ref_(parameters_NA),
+              ui_base_(base),
+              fft_pre_on_("Pre:", zlstate::fftPreON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPre),
+              fft_post_on_("Post:", zlstate::fftPostON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPost),
+              fft_side_on_("Side:", zlstate::fftSideON::choices, ui_base_, zlgui::multilingual::Labels::kFFTSide),
+              fft_speed_("", zlstate::ffTSpeed::choices, ui_base_, zlgui::multilingual::Labels::kFFTDecay),
+              fft_tilt_("", zlstate::ffTTilt::choices, ui_base_, zlgui::multilingual::Labels::kFFTSlope) {
+            for (auto &c: {&fft_pre_on_, &fft_post_on_, &fft_side_on_}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
+                c->setLabelPos(zlgui::ClickCombobox::kLeft);
                 addAndMakeVisible(c);
             }
-            for (auto &c: {&ffTSpeed, &fftTilt}) {
+            for (auto &c: {&fft_speed_, &fft_tilt_}) {
                 addAndMakeVisible(c);
             }
             attach({
-                       &fftPreON.getCompactBox().getBox(),
-                       &fftPostON.getCompactBox().getBox(),
-                       &fftSideON.getCompactBox().getBox(),
-                       &ffTSpeed.getBox(), &fftTilt.getBox()
+                       &fft_pre_on_.getCompactBox().getBox(),
+                       &fft_post_on_.getCompactBox().getBox(),
+                       &fft_side_on_.getCompactBox().getBox(),
+                       &fft_speed_.getBox(), &fft_tilt_.getBox()
                    },
                    {
-                       zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-                       zlState::ffTSpeed::ID, zlState::ffTTilt::ID
+                       zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
+                       zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID
                    },
-                   parametersNARef, boxAttachments);
+                   parameters_NA_ref_, box_attachments_);
             setBufferedToImage(true);
 
-            uiBase.getBoxTree().addListener(this);
+            ui_base_.getBoxTree().addListener(this);
         }
 
         ~AnalyzerBox() override {
-            uiBase.getBoxTree().removeListener(this);
+            ui_base_.getBoxTree().removeListener(this);
         }
 
         void paint(juce::Graphics &g) override {
             juce::Path path;
             const auto bound = getLocalBounds().toFloat();
             path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                     std::round(uiBase.getFontSize() * .25f),
-                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
                                      false, false, true, true);
-            g.setColour(uiBase.getBackgroundColor());
+            g.setColour(ui_base_.getBackgroundColor());
             g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
-            const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
-            const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
-            return {buttonWidth * 3 + padSize * 2, boxHeight * 5 + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            return {button_width * 3 + pad_size * 2, box_height * 5 + pad_size};
         }
 
         void resized() override {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
             auto bound = getLocalBounds();
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
@@ -85,28 +85,28 @@ namespace zlPanel {
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(fftPreON).withArea(1, 1),
-                juce::GridItem(fftPostON).withArea(2, 1),
-                juce::GridItem(fftSideON).withArea(3, 1),
-                juce::GridItem(ffTSpeed).withArea(4, 1),
-                juce::GridItem(fftTilt).withArea(5, 1)
+                juce::GridItem(fft_pre_on_).withArea(1, 1),
+                juce::GridItem(fft_post_on_).withArea(2, 1),
+                juce::GridItem(fft_side_on_).withArea(3, 1),
+                juce::GridItem(fft_speed_).withArea(4, 1),
+                juce::GridItem(fft_tilt_).withArea(5, 1)
             };
             grid.performLayout(bound);
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
 
-        zlInterface::ClickCombobox fftPreON, fftPostON, fftSideON;
-        zlInterface::CompactCombobox ffTSpeed, fftTilt;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+        zlgui::ClickCombobox fft_pre_on_, fft_post_on_, fft_side_on_;
+        zlgui::CompactCombobox fft_speed_, fft_tilt_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_{};
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlInterface::boxIdx::analyzerBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::analyzerBox));
+            juce::ignoreUnused(tree_whose_property_has_changed);
+            if (ui_base_.isBoxProperty(zlgui::BoxIdx::kAnalyzerBox, property)) {
+                const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kAnalyzerBox));
                 setVisible(f);
             }
         }

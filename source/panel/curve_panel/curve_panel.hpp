@@ -22,14 +22,14 @@
 #include "match_panel/match_panel.hpp"
 #include "loudness_display/loudness_display.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class CurvePanel final : public juce::Component,
                              private juce::AudioProcessorValueTreeState::Listener,
                              private juce::ValueTree::Listener,
                              private juce::Thread {
     public:
         explicit CurvePanel(PluginProcessor &processor,
-                            zlInterface::UIBase &base);
+                            zlgui::UIBase &base);
 
         ~CurvePanel() override;
 
@@ -42,35 +42,35 @@ namespace zlPanel {
         void repaintCallBack(double nowT);
 
     private:
-        PluginProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &controllerRef;
-        std::array<zlFilter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
-        BackgroundPanel backgroundPanel;
-        FFTPanel fftPanel;
-        ConflictPanel conflictPanel;
-        SumPanel sumPanel;
-        LoudnessDisplay loudnessDisplay;
-        ButtonPanel buttonPanel;
-        SoloPanel soloPanel;
-        std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
-        std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
-        juce::Component dummyComponent{};
-        std::atomic<size_t> currentBandIdx;
-        size_t previousBandIdx{zlState::bandNUM + 1};
-        MatchPanel matchPanel;
-        double currentT{0.0};
-        bool toNotify{false};
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        zlp::Controller<double> &controller_ref_;
+        std::array<zldsp::filter::Ideal<double, 16>, 16> base_filters_, target_filters_, main_filters_;
+        BackgroundPanel background_panel_;
+        FFTPanel fft_panel_;
+        ConflictPanel conflict_panel_;
+        SumPanel sum_panel_;
+        LoudnessDisplay loudness_display_;
+        ButtonPanel button_panel_;
+        SoloPanel solo_panel_;
+        std::array<std::unique_ptr<SinglePanel>, zlstate::kBandNUM> single_panels_;
+        std::array<std::unique_ptr<SidePanel>, zlstate::kBandNUM> side_panels_;
+        juce::Component dummy_component_{};
+        std::atomic<size_t> band_idx_;
+        size_t previous_band_idx_{zlstate::kBandNUM + 1};
+        MatchPanel match_panel_;
+        double current_t_{0.0};
+        bool to_notify_{false};
 
-        std::atomic<bool> showMatchPanel{false};
-        bool showUISettingsPanel{false};
+        std::atomic<bool> show_match_panel_{false};
+        bool show_ui_setting_panel_{false};
 
-        std::atomic<float> physicalPixelScaleFactor{1.f};
+        std::atomic<float> physical_pixel_scale_factor_{1.f};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
 
         void run() override;

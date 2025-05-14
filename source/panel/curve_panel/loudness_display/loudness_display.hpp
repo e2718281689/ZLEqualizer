@@ -13,10 +13,10 @@
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LoudnessDisplay final : public juce::Component {
     public:
-        explicit LoudnessDisplay(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit LoudnessDisplay(PluginProcessor &p, zlgui::UIBase &base);
 
         void paint(juce::Graphics &g) override;
 
@@ -27,15 +27,15 @@ namespace zlPanel {
         void updateVisible(bool x);
 
     private:
-        PluginProcessor &processorRef;
-        zlInterface::UIBase &uiBase;
-        juce::Time previousTime{};
+        PluginProcessor &processor_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::Time previous_time_{};
 
-        size_t bandIdx{0};
-        std::array<juce::RangedAudioParameter *, zlState::bandNUM> isDynamicOnParas{};
-        std::array<juce::RangedAudioParameter *, zlState::bandNUM> isThresholdAutoParas{};
-        juce::RangedAudioParameter *bandIdxPara;
-        juce::Colour colour;
-        bool shouldVisible{false};
+        size_t band_idx_{0};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> is_dynamic_on_paras_{};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> is_threshold_auto_paras_{};
+        juce::RangedAudioParameter *band_idx_para_;
+        juce::Colour colour_;
+        bool should_visible_{false};
     };
-} // zlPanel
+} // zlpanel

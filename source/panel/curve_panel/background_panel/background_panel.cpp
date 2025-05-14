@@ -9,26 +9,26 @@
 
 #include "background_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     BackgroundPanel::BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base)
-        : uiBase(base),
-          gridPanel(base) {
-        juce::ignoreUnused(parameters, parametersNA);
+                                 juce::AudioProcessorValueTreeState &parameters_NA,
+                                 zlgui::UIBase &base)
+        : ui_base_(base),
+          grid_panel_(base) {
+        juce::ignoreUnused(parameters, parameters_NA);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
-        addAndMakeVisible(gridPanel);
+        addAndMakeVisible(grid_panel_);
         setBufferedToImage(true);
     }
 
     BackgroundPanel::~BackgroundPanel() = default;
 
     void BackgroundPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
     }
 
     void BackgroundPanel::resized() {
-        gridPanel.setBounds(getLocalBounds());
+        grid_panel_.setBounds(getLocalBounds());
     }
 }

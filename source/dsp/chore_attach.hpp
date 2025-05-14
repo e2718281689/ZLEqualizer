@@ -12,13 +12,13 @@
 #include "controller.hpp"
 #include "../state/state_definitions.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     class ChoreAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit ChoreAttach(juce::AudioProcessor &processor,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              Controller<FloatType> &controller);
 
         ~ChoreAttach() override;
@@ -26,13 +26,13 @@ namespace zlDSP {
         void addListeners();
 
     private:
-        juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
-        Controller<FloatType> &controllerRef;
-        std::atomic<float> decaySpeed;
-        std::array<std::atomic<int>, 3> isFFTON{1, 1, 0};
+        juce::AudioProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        Controller<FloatType> &controller_ref_;
+        std::atomic<float> decay_speed_;
+        std::array<std::atomic<int>, 3> is_fft_on_{1, 1, 0};
 
-        constexpr static std::array IDs{
+        constexpr static std::array kIDs{
             sideChain::ID, dynLookahead::ID,
             dynRMS::ID, dynSmooth::ID,
             effectON::ID, phaseFlip::ID, staticAutoGain::ID, autoGain::ID,
@@ -40,7 +40,7 @@ namespace zlDSP {
             filterStructure::ID, dynHQ::ID, zeroLatency::ID,
             loudnessMatcherON::ID
         };
-        constexpr static std::array defaultVs{
+        constexpr static std::array kDefaultVs{
             static_cast<float>(sideChain::defaultV),
             static_cast<float>(dynLookahead::defaultV),
             static_cast<float>(dynRMS::defaultV),
@@ -57,27 +57,27 @@ namespace zlDSP {
             static_cast<float>(loudnessMatcherON::defaultV)
         };
 
-        constexpr static std::array NAIDs{
-            zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-            zlState::ffTSpeed::ID, zlState::ffTTilt::ID,
-            zlState::conflictON::ID,
-            zlState::conflictStrength::ID,
-            zlState::conflictScale::ID
+        constexpr static std::array kNAIDs{
+            zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
+            zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID,
+            zlstate::conflictON::ID,
+            zlstate::conflictStrength::ID,
+            zlstate::conflictScale::ID
         };
 
-        constexpr static std::array defaultNAVs{
-            static_cast<float>(zlState::fftPreON::defaultI),
-            static_cast<float>(zlState::fftPostON::defaultI),
-            static_cast<float>(zlState::fftSideON::defaultI),
-            static_cast<float>(zlState::ffTSpeed::defaultI),
-            static_cast<float>(zlState::ffTTilt::defaultI),
-            static_cast<float>(zlState::conflictON::defaultI),
-            static_cast<float>(zlState::conflictStrength::defaultV),
-            static_cast<float>(zlState::conflictScale::defaultV)
+        constexpr static std::array kDefaultNAVs{
+            static_cast<float>(zlstate::fftPreON::defaultI),
+            static_cast<float>(zlstate::fftPostON::defaultI),
+            static_cast<float>(zlstate::fftSideON::defaultI),
+            static_cast<float>(zlstate::ffTSpeed::defaultI),
+            static_cast<float>(zlstate::ffTTilt::defaultI),
+            static_cast<float>(zlstate::conflictON::defaultI),
+            static_cast<float>(zlstate::conflictStrength::defaultV),
+            static_cast<float>(zlstate::conflictScale::defaultV)
         };
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void initDefaultValues();
     };
-} // zlDSP
+} // zldsp

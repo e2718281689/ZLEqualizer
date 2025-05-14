@@ -13,17 +13,17 @@
 
 #include "../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class CallOutBoxLAF final : public juce::LookAndFeel_V4 {
     public:
-        explicit CallOutBoxLAF(UIBase &base) : uiBase(base) {
+        explicit CallOutBoxLAF(UIBase &base) : ui_base_(base) {
         }
 
         void drawCallOutBoxBackground(juce::CallOutBox &box, juce::Graphics &g,
                                       const juce::Path &,
                                       juce::Image &) override {
-            g.setColour(uiBase.getBackgroundColor());
-            g.fillRoundedRectangle(box.getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
+            g.setColour(ui_base_.getBackgroundColor());
+            g.fillRoundedRectangle(box.getLocalBounds().toFloat(), ui_base_.getFontSize() * .5f);
         }
 
         int getCallOutBoxBorderSize(const juce::CallOutBox &) override {
@@ -35,6 +35,6 @@ namespace zlInterface {
         }
 
     private:
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

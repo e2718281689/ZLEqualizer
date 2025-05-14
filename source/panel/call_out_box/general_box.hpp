@@ -12,91 +12,91 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class GeneralBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
         explicit GeneralBox(juce::AudioProcessorValueTreeState &parameters,
-                            zlInterface::UIBase &base)
-            : parametersRef(parameters),
-              uiBase(base),
-              filterStructure("", zlDSP::filterStructure::choices, uiBase,
-                              zlInterface::multilingual::labels::filterStructure,
+                            zlgui::UIBase &base)
+            : parameters_ref_(parameters),
+              ui_base_(base),
+              filter_structure_c_("", zlp::filterStructure::choices, ui_base_,
+                              zlgui::multilingual::Labels::kFilterStructure,
                               {
-                                  zlInterface::multilingual::labels::minimumPhase,
-                                  zlInterface::multilingual::labels::stateVariable,
-                                  zlInterface::multilingual::labels::parallelPhase,
-                                  zlInterface::multilingual::labels::matchedPhase,
-                                  zlInterface::multilingual::labels::mixedPhase,
-                                  zlInterface::multilingual::labels::linearPhase
+                                  zlgui::multilingual::Labels::kMinimumPhase,
+                                  zlgui::multilingual::Labels::kStateVariable,
+                                  zlgui::multilingual::Labels::kParallelPhase,
+                                  zlgui::multilingual::Labels::kMatchedPhase,
+                                  zlgui::multilingual::Labels::kMixedPhase,
+                                  zlgui::multilingual::Labels::kLinearPhase
                               }),
-              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
-                       zlInterface::multilingual::labels::zeroLatency) {
-            for (auto &c: {&filterStructure}) {
+              zero_lat_c_("Zero LAT:", zlp::zeroLatency::choices, ui_base_,
+                       zlgui::multilingual::Labels::kZeroLatency) {
+            for (auto &c: {&filter_structure_c_}) {
                 addAndMakeVisible(c);
             }
-            for (auto &c: {&zeroLATC}) {
+            for (auto &c: {&zero_lat_c_}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.625f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
+                c->setLabelPos(zlgui::ClickCombobox::kLeft);
                 addAndMakeVisible(c);
             }
             attach({
-                       &filterStructure.getBox(), &zeroLATC.getCompactBox().getBox()
+                       &filter_structure_c_.getBox(), &zero_lat_c_.getCompactBox().getBox()
                    },
                    {
-                       zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID
+                       zlp::filterStructure::ID, zlp::zeroLatency::ID
                    },
-                   parametersRef, boxAttachments);
+                   parameters_ref_, box_attachments_);
             setBufferedToImage(true);
 
-            uiBase.getBoxTree().addListener(this);
+            ui_base_.getBoxTree().addListener(this);
         }
 
         ~GeneralBox() override {
-            uiBase.getBoxTree().removeListener(this);
+            ui_base_.getBoxTree().removeListener(this);
         }
 
         void paint(juce::Graphics &g) override {
             juce::Path path;
             const auto bound = getLocalBounds().toFloat();
             path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                     std::round(uiBase.getFontSize() * .25f),
-                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
                                      false, false, true, true);
-            g.setColour(uiBase.getBackgroundColor());
+            g.setColour(ui_base_.getBackgroundColor());
             g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
-            const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
-            return {static_cast<int>(uiBase.getFontSize() * 10) + padSize * 2, boxHeight * 2 + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            return {static_cast<int>(ui_base_.getFontSize() * 10) + pad_size * 2, box_height * 2 + pad_size};
         }
 
         void resized() override {
             auto bound = getLocalBounds();
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
-            const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
-            filterStructure.setBounds(bound.removeFromTop(boxHeight));
-            zeroLATC.setBounds(bound.removeFromTop(boxHeight));
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            filter_structure_c_.setBounds(bound.removeFromTop(box_height));
+            zero_lat_c_.setBounds(bound.removeFromTop(box_height));
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        zlgui::UIBase &ui_base_;
 
-        zlInterface::CompactCombobox filterStructure;
-        zlInterface::ClickCombobox zeroLATC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+        zlgui::CompactCombobox filter_structure_c_;
+        zlgui::ClickCombobox zero_lat_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlInterface::boxIdx::generalBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::generalBox));
+            juce::ignoreUnused(tree_whose_property_has_changed);
+            if (ui_base_.isBoxProperty(zlgui::BoxIdx::kGeneralBox, property)) {
+                const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kGeneralBox));
                 setVisible(f);
             }
         }

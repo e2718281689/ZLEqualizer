@@ -17,30 +17,30 @@
 #include "../../helper/helper.hpp"
 #include "reset_component.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LeftControlPanel final : public juce::Component,
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::AsyncUpdater {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(zlInterface::UIBase &base) : uiBase(base) {
+            explicit Background(zlgui::UIBase &base) : ui_base_(base) {
                 setBufferedToImage(true);
                 setOpaque(true);
             }
 
             void paint(juce::Graphics &g) override {
-                g.fillAll(uiBase.getBackgroundColor());
+                g.fillAll(ui_base_.getBackgroundColor());
                 const auto bound = getLocalBounds().toFloat();
-                uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+                ui_base_.fillRoundedShadowRectangle(g, bound, 0.5f * ui_base_.getFontSize(), {.blur_radius = 0.25f});
             }
 
         private:
-            zlInterface::UIBase &uiBase;
+            zlgui::UIBase &ui_base_;
         };
 
     public:
-        explicit LeftControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit LeftControlPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~LeftControlPanel() override;
 
@@ -50,35 +50,35 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
-        zlInterface::CompactButton &getDynamicAutoButton() { return dynLC; }
+        zlgui::CompactButton &getDynamicAutoButton() { return dyn_l_c_; }
 
     private:
-        PluginProcessor &processorRef;
-        zlInterface::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        PluginProcessor &processor_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
 
-        Background background;
+        Background background_;
 
-        zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        zlgui::CompactButton bypass_c_, solo_c_, dyn_on_c_, dyn_l_c_;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > button_attachments_;
 
-        zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
-        zlInterface::LeftRightCombobox lrBox;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+        zlgui::CompactCombobox f_type_c_, slope_c_, stereo_c_;
+        zlgui::LeftRightCombobox lr_box_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_;
 
-        zlInterface::TwoValueRotarySlider<true, false> freqC;
-        zlInterface::TwoValueRotarySlider<true, true> gainC, qC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+        zlgui::TwoValueRotarySlider<true, false> freq_c_;
+        zlgui::TwoValueRotarySlider<true, true> gain_c_, q_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> slider_attachments_;
 
-        ResetComponent resetComponent;
+        ResetComponent reset_component_;
 
-        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, dynONDrawable, dynLeDrawable;
+        const std::unique_ptr<juce::Drawable> bypass_drawable_, solo_drawable_, dyn_on_drawable_, dyn_l_drawable_;
 
-        std::atomic<size_t> bandIdx;
+        std::atomic<size_t> band_idx_;
 
-        std::atomic<bool> gainCEditable{true}, slopCEnable{true}, gainS2Editable{false}, qS2Editable{false};
+        std::atomic<bool> gain_c_editable_{true}, slop_c_enable_{true}, gain_s2_editable_{false}, q_s2_editable_{false};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void handleAsyncUpdate() override;
 

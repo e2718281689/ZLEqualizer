@@ -14,12 +14,12 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ResetComponent final : public juce::Component {
     public:
         explicit ResetComponent(juce::AudioProcessorValueTreeState &parameters,
-                                juce::AudioProcessorValueTreeState &parametersNA,
-                                zlInterface::UIBase &base);
+                                juce::AudioProcessorValueTreeState &parameters_NA,
+                                zlgui::UIBase &base);
 
         ~ResetComponent() override;
 
@@ -28,10 +28,10 @@ namespace zlPanel {
         void attachGroup(size_t idx);
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        const std::unique_ptr<juce::Drawable> drawable;
-        zlInterface::ClickButton button;
-        std::atomic<size_t> bandIdx;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        const std::unique_ptr<juce::Drawable> drawable_;
+        zlgui::ClickButton button_;
+        std::atomic<size_t> band_idx_;
     };
-} // zlPanel
+} // zlpanel

@@ -14,13 +14,13 @@
 #include "../../PluginProcessor.hpp"
 #include "../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class OutputValuePanel final : public juce::Component,
                                    private juce::MultiTimer,
                                    private juce::ValueTree::Listener {
     public:
         explicit OutputValuePanel(PluginProcessor &p,
-                                  zlInterface::UIBase &base);
+                                  zlgui::UIBase &base);
 
         ~OutputValuePanel() override;
 
@@ -29,17 +29,17 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        PluginProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        juce::RangedAudioParameter *lmPara;
-        std::atomic<float> &scale;
-        float currentGain{0.f}, currentScale{100.f};
-        bool currentLearning{false};
-        juce::String gainString{"0.0"}, scaleString{"100%"};
-        bool showGain{false};
-        juce::Rectangle<float> gainBound, scaleBound;
-        juce::Path backgroundPath;
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::RangedAudioParameter *lm_para_;
+        std::atomic<float> &scale_;
+        float c_gain_{0.f}, c_scale_{100.f};
+        bool c_learning_{false};
+        juce::String gain_string_{"0.0"}, scale_string_{"100%"};
+        bool show_gain_{false};
+        juce::Rectangle<float> gain_bound_, scale_bound_;
+        juce::Path background_path_;
 
         void timerCallback(int timerID) override;
 
@@ -47,7 +47,7 @@ namespace zlPanel {
 
         void updateGainValue();
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
     };
-} // zlPanel
+} // zlpanel

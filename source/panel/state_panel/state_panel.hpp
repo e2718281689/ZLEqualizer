@@ -16,33 +16,33 @@
 #include "setting_panel.hpp"
 #include "match_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class StatePanel final : public juce::Component {
     public:
         explicit StatePanel(PluginProcessor &p,
-                            zlInterface::UIBase &base,
+                            zlgui::UIBase &base,
                             UISettingPanel &uiSettingPanel);
 
         void resized() override;
 
     private:
-        constexpr static float labelSize = 2.75f;
-        zlInterface::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parametersNARef;
+        constexpr static float kLabelSize = 2.75f;
+        zlgui::UIBase &ui_base_;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
 
-        OutputValuePanel outputValuePanel;
-        SettingPanel outputSettingPanel;
-        SettingPanel analyzerSettingPanel;
-        SettingPanel dynamicSettingPanel;
-        SettingPanel collisionSettingPanel;
-        SettingPanel generalSettingPanel;
-        MatchSettingPanel matchSettingPanel;
-        LogoPanel logoPanel;
+        OutputValuePanel output_value_panel_;
+        SettingPanel output_setting_panel_;
+        SettingPanel analyzer_setting_panel_;
+        SettingPanel dynamic_setting_panel_;
+        SettingPanel collision_setting_panel_;
+        SettingPanel general_setting_panel_;
+        MatchSettingPanel match_setting_panel_;
+        LogoPanel logo_panel_;
 
-        zlInterface::CompactButton effectC, sideC, sgcC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
-        const std::unique_ptr<juce::Drawable> effectDrawable;
-        const std::unique_ptr<juce::Drawable> sideDrawable;
-        const std::unique_ptr<juce::Drawable> sgcDrawable;
+        zlgui::CompactButton effect_c_, side_c_, sgc_c_;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<true> > button_attachments_{};
+        const std::unique_ptr<juce::Drawable> effect_drawable_;
+        const std::unique_ptr<juce::Drawable> side_drawable_;
+        const std::unique_ptr<juce::Drawable> sgc_drawable_;
     };
-} // zlPanel
+} // zlpanel

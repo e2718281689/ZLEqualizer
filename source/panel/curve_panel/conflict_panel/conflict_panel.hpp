@@ -14,11 +14,11 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ConflictPanel final : public juce::Component {
     public:
-        explicit ConflictPanel(zlFFTAnalyzer::ConflictAnalyzer<double> &conflictAnalyzer,
-                               zlInterface::UIBase &base);
+        explicit ConflictPanel(zldsp::analyzer::ConflictAnalyzer<double> &conflictAnalyzer,
+                               zlgui::UIBase &base);
 
         ~ConflictPanel() override;
 
@@ -27,8 +27,8 @@ namespace zlPanel {
         void resized() override;
 
         void updateGradient() {
-            if (analyzer.getON()) {
-                analyzer.updateGradient(gradient);
+            if (analyzer_ref_.getON()) {
+                analyzer_ref_.updateGradient(gradient_);
                 setVisible(true);
             } else {
                 setVisible(false);
@@ -36,9 +36,9 @@ namespace zlPanel {
         }
 
     private:
-        zlFFTAnalyzer::ConflictAnalyzer<double> &analyzer;
-        zlInterface::UIBase &uiBase;
-        juce::Path path;
-        juce::ColourGradient gradient;
+        zldsp::analyzer::ConflictAnalyzer<double> &analyzer_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::Path path_;
+        juce::ColourGradient gradient_;
     };
-} // zlPanel
+} // zlpanel

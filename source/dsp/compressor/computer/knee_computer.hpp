@@ -11,7 +11,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace zlCompressor {
+namespace zldsp::compressor {
     template<typename FloatType>
     struct LinearCurve {
         static constexpr FloatType a{FloatType(0)};
@@ -49,30 +49,30 @@ namespace zlCompressor {
     /**
      * a computer that computes the current compression
      * @tparam FloatType
-     * @tparam useCurve whether to use curve
-     * @tparam useBound whether to use bound
+     * @tparam UseCurve whether to use curve
+     * @tparam UseBound whether to use bound
      */
-    template<typename FloatType, bool useCurve = false, bool useBound = false>
+    template<typename FloatType, bool UseCurve = false, bool UseBound = false>
     class KneeComputer final {
     public:
         KneeComputer() = default;
 
         void prepareBuffer() {
-            if (toInterpolate.exchange(false)) {
+            if (to_interpolate_.exchange(false)) {
                 interpolate();
             }
         }
 
         FloatType eval(FloatType x) {
-            if (x <= lowThres) {
+            if (x <= low_th_) {
                 return x;
-            } else if (x >= highThres) {
-                const auto y = useCurve ? paras[2] + paras[3] * x + paras[4] * x * x : paras[2] + paras[3] * x;
-                return useBound ? std::max(x - currentBound, y) : y;
+            } else if (x >= high_th_) {
+                const auto y = UseCurve ? paras_[2] + paras_[3] * x + paras_[4] * x * x : paras_[2] + paras_[3] * x;
+                return UseBound ? std::max(x - c_bound_, y) : y;
             } else {
-                const auto xx = x + paras[1];
-                const auto y = x + paras[0] * xx * xx;
-                return useBound ? std::max(x - currentBound, y) : y;
+                const auto xx = x + paras_[1];
+                const auto y = x + paras_[0] * xx * xx;
+                return UseBound ? std::max(x - c_bound_, y) : y;
             }
         }
 
@@ -86,89 +86,89 @@ namespace zlCompressor {
         }
 
         inline void setThreshold(FloatType v) {
-            threshold.store(v);
-            toInterpolate.store(true);
+            threshold_.store(v);
+            to_interpolate_.store(true);
         }
 
-        inline FloatType getThreshold() const { return threshold.load(); }
+        inline FloatType getThreshold() const { return threshold_.load(); }
 
         inline void setRatio(FloatType v) {
-            ratio.store(std::max(FloatType(1), v));
-            toInterpolate.store(true);
+            ratio_.store(std::max(FloatType(1), v));
+            to_interpolate_.store(true);
         }
 
-        inline FloatType getRatio() const { return ratio.load(); }
+        inline FloatType getRatio() const { return ratio_.load(); }
 
         inline void setKneeW(FloatType v) {
-            kneeW.store(std::max(v, FloatType(0.01)));
-            toInterpolate.store(true);
+            knee_w_.store(std::max(v, FloatType(0.01)));
+            to_interpolate_.store(true);
         }
 
-        inline FloatType getKneeW() const { return kneeW.load(); }
+        inline FloatType getKneeW() const { return knee_w_.load(); }
 
         inline void setCurve(FloatType v) {
-            curve.store(juce::jlimit(FloatType(-1), FloatType(1), v));
-            toInterpolate.store(true);
+            curve_.store(juce::jlimit(FloatType(-1), FloatType(1), v));
+            to_interpolate_.store(true);
         }
 
-        inline FloatType getCurve() const { return curve.load(); }
+        inline FloatType getCurve() const { return curve_.load(); }
 
         inline void setBound(FloatType v) {
-            bound.store(v);
+            bound_.store(v);
         }
 
-        inline FloatType getBound() const { return bound.load(); }
+        inline FloatType getBound() const { return bound_.load(); }
 
-        FloatType getReductionAtKnee() const { return reductionAtKnee; }
+        FloatType getReductionAtKnee() const { return reduction_at_knee_; }
 
     private:
-        LinearCurve<FloatType> linearCurve;
-        DownCurve<FloatType> downCurve;
-        UpCurve<FloatType> upCurve;
-        std::atomic<FloatType> threshold{-18}, ratio{2};
-        std::atomic<FloatType> kneeW{FloatType(0.25)}, curve{0};
-        FloatType lowThres{0}, highThres{0};
-        std::atomic<FloatType> bound{60};
-        FloatType currentBound{60};
-        FloatType reductionAtKnee{FloatType(0.001)};
-        std::array<FloatType, 5> paras;
-        std::atomic<bool> toInterpolate{true};
+        LinearCurve<FloatType> linear_curve_;
+        DownCurve<FloatType> down_curve_;
+        UpCurve<FloatType> up_curve_;
+        std::atomic<FloatType> threshold_{-18}, ratio_{2};
+        std::atomic<FloatType> knee_w_{FloatType(0.25)}, curve_{0};
+        FloatType low_th_{0}, high_th_{0};
+        std::atomic<FloatType> bound_{60};
+        FloatType c_bound_{60};
+        FloatType reduction_at_knee_{FloatType(0.001)};
+        std::array<FloatType, 5> paras_;
+        std::atomic<bool> to_interpolate_{true};
 
         void interpolate() {
-            const auto currentThreshold = threshold.load();
-            const auto currentKneeW = kneeW.load();
-            const auto currentRatio = ratio.load();
-            if (useBound) {
-                currentBound = bound.load();
+            const auto currentThreshold = threshold_.load();
+            const auto currentKneeW = knee_w_.load();
+            const auto currentRatio = ratio_.load();
+            if (UseBound) {
+                c_bound_ = bound_.load();
             }
-            const auto currentCurve = curve.load();
-            lowThres = currentThreshold - currentKneeW;
-            highThres = currentThreshold + currentKneeW;
-            paras[0] = FloatType(1) / currentRatio - FloatType(1);
-            paras[1] = -lowThres;
-            paras[0] *= FloatType(1) / (currentKneeW * FloatType(4));
-            if (useCurve) {
+            const auto currentCurve = curve_.load();
+            low_th_ = currentThreshold - currentKneeW;
+            high_th_ = currentThreshold + currentKneeW;
+            paras_[0] = FloatType(1) / currentRatio - FloatType(1);
+            paras_[1] = -low_th_;
+            paras_[0] *= FloatType(1) / (currentKneeW * FloatType(4));
+            if (UseCurve) {
                 if (currentCurve >= FloatType(0)) {
                     const auto alpha = FloatType(1) - currentCurve, beta = currentCurve;
-                    linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
-                    downCurve.setPara(currentThreshold, currentRatio, currentKneeW);
-                    paras[2] = alpha * linearCurve.c + beta * downCurve.c;
-                    paras[3] = alpha * linearCurve.b + beta * downCurve.b;
-                    paras[4] = alpha * linearCurve.a + beta * downCurve.a;
+                    linear_curve_.setPara(currentThreshold, currentRatio, currentKneeW);
+                    down_curve_.setPara(currentThreshold, currentRatio, currentKneeW);
+                    paras_[2] = alpha * linear_curve_.c + beta * down_curve_.c;
+                    paras_[3] = alpha * linear_curve_.b + beta * down_curve_.b;
+                    paras_[4] = alpha * linear_curve_.a + beta * down_curve_.a;
                 } else {
                     const auto alpha = FloatType(1) + currentCurve, beta = -currentCurve;
-                    linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
-                    upCurve.setPara(currentThreshold, currentRatio, currentKneeW);
-                    paras[2] = alpha * linearCurve.c + beta * upCurve.c;
-                    paras[3] = alpha * linearCurve.b + beta * upCurve.b;
-                    paras[4] = alpha * linearCurve.a + beta * upCurve.a;
+                    linear_curve_.setPara(currentThreshold, currentRatio, currentKneeW);
+                    up_curve_.setPara(currentThreshold, currentRatio, currentKneeW);
+                    paras_[2] = alpha * linear_curve_.c + beta * up_curve_.c;
+                    paras_[3] = alpha * linear_curve_.b + beta * up_curve_.b;
+                    paras_[4] = alpha * linear_curve_.a + beta * up_curve_.a;
                 }
             } else {
-                linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
-                paras[2] = linearCurve.c;
-                paras[3] = linearCurve.b;
+                linear_curve_.setPara(currentThreshold, currentRatio, currentKneeW);
+                paras_[2] = linear_curve_.c;
+                paras_[3] = linear_curve_.b;
             }
-            reductionAtKnee = std::max(FloatType(0.001), highThres - eval(highThres));
+            reduction_at_knee_ = std::max(FloatType(0.001), high_th_ - eval(high_th_));
         }
     };
 } // KneeComputer

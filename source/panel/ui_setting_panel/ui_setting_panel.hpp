@@ -14,10 +14,10 @@
 #include "control_setting_panel.hpp"
 #include "other_ui_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class UISettingPanel final : public juce::Component {
     public:
-        explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit UISettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~UISettingPanel() override;
 
@@ -34,29 +34,29 @@ namespace zlPanel {
         void setRendererList(const juce::StringArray &rendererList);
 
     private:
-        PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        juce::Viewport viewPort;
-        ColourSettingPanel colourPanel;
-        ControlSettingPanel controlPanel;
-        OtherUISettingPanel otherPanel;
-        const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
-        zlInterface::ClickButton saveButton, closeButton, resetButton;
+        PluginProcessor &processor_ref_;
+        zlgui::UIBase &ui_base_;
+        juce::Viewport view_port_;
+        ColourSettingPanel colour_panel_;
+        ControlSettingPanel control_panel_;
+        OtherUISettingPanel other_panel_;
+        const std::unique_ptr<juce::Drawable> save_drawable_, close_drawable_, reset_drawable_;
+        zlgui::ClickButton save_button_, close_button_, reset_button_;
 
-        zlInterface::NameLookAndFeel panelNameLAF;
-        std::array<juce::Label, 3> panelLabels;
+        zlgui::NameLookAndFeel panel_name_laf_;
+        std::array<juce::Label, 3> panel_labels_;
 
-        juce::Label versionLabel;
-        zlInterface::NameLookAndFeel labelLAF;
+        juce::Label version_label_;
+        zlgui::NameLookAndFeel label_laf_;
 
-        enum panelIdx {
-            colourP,
-            controlP,
-            otherP
+        enum PanelIdx {
+            kColourP,
+            kControlP,
+            kOtherP
         };
 
-        panelIdx currentPanelIdx = colourP;
+        PanelIdx current_panel_idx_ = kColourP;
 
         void changeDisplayPanel();
     };
-} // zlPanel
+} // zlpanel

@@ -9,159 +9,159 @@
 
 #include "sum_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     SumPanel::SumPanel(juce::AudioProcessorValueTreeState &parameters,
-                       zlInterface::UIBase &base,
-                       zlDSP::Controller<double> &controller,
-                       std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
-                       std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters)
-        : parametersRef(parameters),
-          uiBase(base), c(controller),
-          mMainFilters(mainFilters) {
-        juce::ignoreUnused(baseFilters);
-        dBs.resize(ws.size());
-        for (auto &path: paths) {
-            path.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3));
+                       zlgui::UIBase &base,
+                       zlp::Controller<double> &controller,
+                       std::array<zldsp::filter::Ideal<double, 16>, 16> &base_filters,
+                       std::array<zldsp::filter::Ideal<double, 16>, 16> &main_filters)
+        : parameters_ref_(parameters),
+          ui_base_(base), controller_ref_(controller),
+          main_filters_(main_filters) {
+        juce::ignoreUnused(base_filters);
+        dbs_.resize(ws.size());
+        for (auto &path: paths_) {
+            path.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3));
         }
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            for (const auto &idx: changeIDs) {
-                const auto paraID = zlDSP::appendSuffix(idx, i);
-                parameterChanged(paraID, parametersRef.getRawParameterValue(paraID)->load());
-                parametersRef.addParameterListener(paraID, this);
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
+            for (const auto &idx: kChangeIDs) {
+                const auto paraID = zlp::appendSuffix(idx, i);
+                parameterChanged(paraID, parameters_ref_.getRawParameterValue(paraID)->load());
+                parameters_ref_.addParameterListener(paraID, this);
             }
         }
         lookAndFeelChanged();
     }
 
     SumPanel::~SumPanel() {
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            for (const auto &idx: changeIDs) {
-                parametersRef.removeParameterListener(zlDSP::appendSuffix(idx, i), this);
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
+            for (const auto &idx: kChangeIDs) {
+                parameters_ref_.removeParameterListener(zlp::appendSuffix(idx, i), this);
             }
         }
     }
 
     void SumPanel::paint(juce::Graphics &g) {
-        std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            const auto idx = static_cast<size_t>(c.getFilterLRs(i));
-            if (!c.getBypass(i)) {
-                useLRMS[idx] = true;
+        std::array<bool, 5> use_lrms{false, false, false, false, false};
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
+            const auto idx = static_cast<size_t>(controller_ref_.getFilterLRs(i));
+            if (!controller_ref_.getBypass(i)) {
+                use_lrms[idx] = true;
             }
         }
-        if (uiBase.getIsRenderingHardware()) {
-            const auto currentThickness = curveThickness.load();
-            for (size_t j = 0; j < useLRMS.size(); ++j) {
-                if (!useLRMS[j]) { continue; }
-                g.setColour(colours[j]);
-                const juce::GenericScopedTryLock lock(pathLocks[j]);
+        if (ui_base_.getIsRenderingHardware()) {
+            const auto current_thickness = curve_thickness_.load();
+            for (size_t j = 0; j < use_lrms.size(); ++j) {
+                if (!use_lrms[j]) { continue; }
+                g.setColour(colours_[j]);
+                const juce::GenericScopedTryLock lock(path_locks_[j]);
                 if (lock.isLocked()) {
-                    g.strokePath(recentPaths[j], juce::PathStrokeType(
-                                     currentThickness,
+                    g.strokePath(recent_paths_[j], juce::PathStrokeType(
+                                     current_thickness,
                                      juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
                 }
             }
         } else {
-            for (size_t j = 0; j < useLRMS.size(); ++j) {
-                if (!useLRMS[j]) { continue; }
-                g.setColour(colours[j]);
-                const juce::GenericScopedTryLock lock(pathLocks[j]);
+            for (size_t j = 0; j < use_lrms.size(); ++j) {
+                if (!use_lrms[j]) { continue; }
+                g.setColour(colours_[j]);
+                const juce::GenericScopedTryLock lock(path_locks_[j]);
                 if (lock.isLocked()) {
-                    g.fillPath(recentPaths[j]);
+                    g.fillPath(recent_paths_[j]);
                 }
             }
         }
     }
 
     bool SumPanel::checkRepaint() {
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            if (mMainFilters[i].getMagOutdated()) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
+            if (main_filters_[i].getMagOutdated()) {
                 return true;
             }
         }
-        if (toRepaint.exchange(false)) {
+        if (to_repaint_.exchange(false)) {
             return true;
         }
         return false;
     }
 
     void SumPanel::run(const float physicalPixelScaleFactor) {
-        juce::ScopedNoDenormals noDenormals;
-        const auto isHardware = uiBase.getIsRenderingHardware();
-        std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            const auto idx = static_cast<size_t>(lrTypes[i].load());
-            if (!isBypassed[i].load()) {
-                useLRMS[idx] = true;
+        juce::ScopedNoDenormals no_denormals;
+        const auto is_hardware = ui_base_.getIsRenderingHardware();
+        std::array<bool, 5> use_lrms{false, false, false, false, false};
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
+            const auto idx = static_cast<size_t>(lr_types_[i].load());
+            if (!is_bypassed_[i].load()) {
+                use_lrms[idx] = true;
             }
         }
 
-        for (size_t j = 0; j < useLRMS.size(); ++j) {
-            paths[j].clear();
-            if (!useLRMS[j]) {
+        for (size_t j = 0; j < use_lrms.size(); ++j) {
+            paths_[j].clear();
+            if (!use_lrms[j]) {
                 continue;
             }
 
-            std::fill(dBs.begin(), dBs.end(), 0.0);
-            for (size_t i = 0; i < zlState::bandNUM; i++) {
-                auto &filter{c.getMainIdealFilter(i)};
-                if (lrTypes[i].load() == static_cast<zlDSP::lrType::lrTypes>(j) && !isBypassed[i].load()) {
-                    mMainFilters[i].setGain(filter.getGain());
-                    mMainFilters[i].setQ(filter.getQ());
-                    mMainFilters[i].updateMagnitude(ws);
-                    mMainFilters[i].addDBs(dBs);
+            std::fill(dbs_.begin(), dbs_.end(), 0.0);
+            for (size_t i = 0; i < zlstate::kBandNUM; i++) {
+                auto &filter{controller_ref_.getMainIdealFilter(i)};
+                if (lr_types_[i].load() == static_cast<zlp::lrType::lrTypes>(j) && !is_bypassed_[i].load()) {
+                    main_filters_[i].setGain(filter.getGain());
+                    main_filters_[i].setQ(filter.getQ());
+                    main_filters_[i].updateMagnitude(ws);
+                    main_filters_[i].addDBs(dbs_);
                 }
             }
 
-            drawCurve(paths[j], dBs, maximumDB.load(), atomicBound.load(), false, true);
-            if (!isHardware) {
+            drawCurve(paths_[j], dbs_, maximum_db_.load(), atomic_bound_.load(), false, true);
+            if (!is_hardware) {
                 juce::PathStrokeType stroke{
-                    curveThickness.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
+                    curve_thickness_.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
                 };
-                stroke.createStrokedPath(strokePaths[j], paths[j], {}, physicalPixelScaleFactor);
+                stroke.createStrokedPath(stroke_paths_[j], paths_[j], {}, physicalPixelScaleFactor);
             }
         }
-        if (isHardware) {
-            for (size_t j = 0; j < useLRMS.size(); ++j) {
-                juce::GenericScopedLock lock(pathLocks[j]);
-                recentPaths[j] = paths[j];
+        if (is_hardware) {
+            for (size_t j = 0; j < use_lrms.size(); ++j) {
+                juce::GenericScopedLock lock(path_locks_[j]);
+                recent_paths_[j] = paths_[j];
             }
         } else {
-            for (size_t j = 0; j < useLRMS.size(); ++j) {
-                juce::GenericScopedLock lock(pathLocks[j]);
-                recentPaths[j] = strokePaths[j];
+            for (size_t j = 0; j < use_lrms.size(); ++j) {
+                juce::GenericScopedLock lock(path_locks_[j]);
+                recent_paths_[j] = stroke_paths_[j];
             }
         }
     }
 
-    void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (parameterID.startsWith(zlDSP::bypass::ID)) {
-            isBypassed[idx].store(newValue > .5f);
-        } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
-            lrTypes[idx].store(static_cast<zlDSP::lrType::lrTypes>(newValue));
+    void SumPanel::parameterChanged(const juce::String &parameter_id, float new_value) {
+        const auto idx = static_cast<size_t>(parameter_id.getTrailingIntValue());
+        if (parameter_id.startsWith(zlp::bypass::ID)) {
+            is_bypassed_[idx].store(new_value > .5f);
+        } else if (parameter_id.startsWith(zlp::lrType::ID)) {
+            lr_types_[idx].store(static_cast<zlp::lrType::lrTypes>(new_value));
         }
-        toRepaint.store(true);
+        to_repaint_.store(true);
     }
 
     void SumPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        atomicBound.store({
-            bound.getX(), bound.getY() + uiBase.getFontSize(),
-            bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize()
+        atomic_bound_.store({
+            bound.getX(), bound.getY() + ui_base_.getFontSize(),
+            bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize()
         });
-        toRepaint.store(true);
+        to_repaint_.store(true);
         updateCurveThickness();
     }
 
     void SumPanel::lookAndFeelChanged() {
-        for (size_t j = 0; j < colours.size(); ++j) {
-            colours[j] = uiBase.getColorMap2(j);
+        for (size_t j = 0; j < colours_.size(); ++j) {
+            colours_[j] = ui_base_.getColorMap2(j);
         }
         updateCurveThickness();
     }
 
     void SumPanel::updateCurveThickness() {
-        curveThickness.store(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness());
+        curve_thickness_.store(ui_base_.getFontSize() * 0.2f * ui_base_.getSumCurveThickness());
     }
-} // zlPanel
+} // zlpanel

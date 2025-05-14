@@ -13,28 +13,28 @@
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class RightControlPanel final : public juce::Component {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(zlInterface::UIBase &base) : uiBase(base) {
+            explicit Background(zlgui::UIBase &base) : ui_base_(base) {
                 setBufferedToImage(true);
                 setOpaque(true);
             }
 
             void paint(juce::Graphics &g) override {
-                g.fillAll(uiBase.getBackgroundColor());
+                g.fillAll(ui_base_.getBackgroundColor());
                 const auto bound = getLocalBounds().toFloat();
-                uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+                ui_base_.fillRoundedShadowRectangle(g, bound, 0.5f * ui_base_.getFontSize(), {.blur_radius = 0.25f});
             }
 
         private:
-            zlInterface::UIBase &uiBase;
+            zlgui::UIBase &ui_base_;
         };
 
     public:
-        explicit RightControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit RightControlPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~RightControlPanel() override;
 
@@ -45,22 +45,22 @@ namespace zlPanel {
         void attachGroup(size_t idx);
 
     private:
-        zlInterface::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        std::atomic<bool> dynEditable{false};
+        zlgui::UIBase &ui_base_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        std::atomic<bool> dyn_editable_{false};
 
-        Background background;
+        Background background_;
 
-        zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, swapC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        zlgui::CompactButton dyn_bypass_c_, dyn_solo_c_, dyn_relative_c_, swap_c_;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > button_attachments_;
 
-        zlInterface::TwoValueRotarySlider<true, false> sideFreqC, sideQC;
-        zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+        zlgui::TwoValueRotarySlider<true, false> side_freq_c_, side_q_c_;
+        zlgui::CompactLinearSlider threshold_c_, knee_c_, attack_c_, release_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> slider_attachments_;
 
-        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, relativeDrawable, swapDrawable;
+        const std::unique_ptr<juce::Drawable> bypass_drawable_, solo_drawable_, relative_drawable_, swap_drawable_;
 
-        std::atomic<size_t> bandIdx;
+        std::atomic<size_t> band_idx_;
 
         void updateMouseDragSensitivity();
     };

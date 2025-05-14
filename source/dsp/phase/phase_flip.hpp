@@ -11,7 +11,9 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlPhase {
+#include "../vector/vector.hpp"
+
+namespace zldsp::phase {
     /**
      * phase-flip the input audio buffer
      * @tparam FloatType the float type of input audio buffer
@@ -19,13 +21,29 @@ namespace zlPhase {
     template<typename FloatType>
     class PhaseFlip {
     public:
-        void process(juce::AudioBuffer<FloatType> &buffer);
+        void process(juce::AudioBuffer<FloatType> &buffer) {
+            if (is_on_.load()) {
+                const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
+                const auto num_channels = buffer.getNumChannels();
+                for (int chan = 0; chan < num_channels; ++chan) {
+                    zldsp::vector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), num_samples);
+                }
+            }
+        }
 
-        void process(juce::dsp::AudioBlock<FloatType> block);
+        void process(juce::dsp::AudioBlock<FloatType> block) {
+            if (is_on_.load()) {
+                const auto num_samples = block.getNumSamples();
+                const auto num_channels = block.getNumChannels();
+                for (size_t chan = 0; chan < num_channels; ++chan) {
+                    zldsp::vector::multiply(block.getChannelPointer(chan), FloatType(-1.f), num_samples);
+                }
+            }
+        }
 
-        void setON(const bool f) { isON.store(f); }
+        void setON(const bool f) { is_on_.store(f); }
 
     private:
-        std::atomic<bool> isON;
+        std::atomic<bool> is_on_;
     };
-} // zlPhase
+} // zldsp::phase

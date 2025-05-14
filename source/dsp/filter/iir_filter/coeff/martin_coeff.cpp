@@ -14,11 +14,11 @@
 #include "martin_coeff.hpp"
 #include "../../helpers.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     std::array<double, 4> MartinCoeff::get1LowPass(const double w0) {
-        const auto fc = w0 / pi;
+        const auto fc = w0 / kPi;
         const auto fm = 0.5 * std::sqrt(fc * fc + 1);
-        const auto phim = 1 - std::cos(pi * fm);
+        const auto phim = 1 - std::cos(kPi * fm);
 
         const double a1 = -std::exp(-w0);
 
@@ -46,11 +46,11 @@ namespace zlFilter {
     }
 
     std::array<double, 4> MartinCoeff::get1TiltShelf(const double w0, const double g) {
-        const auto fc = w0 / pi;
+        const auto fc = w0 / kPi;
         const auto fm = fc * 0.75;
-        const auto phim = 1 - std::cos(pi * fm);
-        const auto alpha = 2 / pi2 * (1 / std::pow(fm, 2) + 1 / g / std::pow(fc, 2)) - 1 / phim;
-        const auto beta = 2 / pi2 * (1 / std::pow(fm, 2) + g / std::pow(fc, 2)) - 1 / phim;
+        const auto phim = 1 - std::cos(kPi * fm);
+        const auto alpha = 2 / kPi2 * (1 / std::pow(fm, 2) + 1 / g / std::pow(fc, 2)) - 1 / phim;
+        const auto beta = 2 / kPi2 * (1 / std::pow(fm, 2) + g / std::pow(fc, 2)) - 1 / phim;
 
         const auto a1 = -alpha / (1 + alpha + std::sqrt(1 + 2 * alpha));
 
@@ -77,16 +77,16 @@ namespace zlFilter {
         const auto a = solve_a(w0, 0.5 / q, 1);
         const auto A = get_AB(a);
         std::array<double, 3> ws{};
-        if (w0 > pi / 32) {
+        if (w0 > kPi / 32) {
             ws = {0, 0.5 * w0, w0};
         } else {
-            ws = {pi, w0, 0.5 * (pi + w0)};
+            ws = {kPi, w0, 0.5 * (kPi + w0)};
         }
         std::array<std::array<double, 3>, 3> phi{};
         std::array<double, 3> res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
-            res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+            res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
         }
         const auto B = linear_solve(phi, res);
         const auto b = get_ab(B);
@@ -99,7 +99,7 @@ namespace zlFilter {
         const auto phi0 = get_phi(w0);
 
         std::array<double, 3> b{};
-        b[0] = q * std::sqrt(dot_product(A, phi0)) / 4 / phi0[1];
+        b[0] = q * std::sqrt(dotProduct(A, phi0)) / 4 / phi0[1];
         b[1] = -2 * b[0];
         b[2] = b[0];
         return {a[0], a[1], a[2], b[0], b[1], b[2]};
@@ -110,10 +110,10 @@ namespace zlFilter {
         const auto a = solve_a(w0, 0.5 / q);
         const auto A = get_AB(a);
 
-        if (w0 > pi / 32) {
+        if (w0 > kPi / 32) {
             const auto phi0 = get_phi(w0);
-            const auto R1 = dot_product(phi0, A);
-            const auto R2 = dot_product({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
+            const auto R1 = dotProduct(phi0, A);
+            const auto R2 = dotProduct({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
 
             std::array<double, 3> B{};
             B[0] = 0.0;
@@ -123,9 +123,9 @@ namespace zlFilter {
             const auto b = get_ab(B);
             return {a[0], a[1], a[2], b[0], b[1], b[2]};
         } else {
-            const auto _w = get_bandwidth(w0, q);
+            const auto _w = getBandwidth(w0, q);
             const auto w1 = _w[0], w2 = _w[1];
-            std::array<double, 3> ws{0, w0, w0 > piHalf ? w1 : w2};
+            std::array<double, 3> ws{0, w0, w0 > kPiHalf ? w1 : w2};
             const auto _ws = ws;
             std::array<double, 3> B{-1, -1, -1};
             size_t trial = 0;
@@ -135,10 +135,10 @@ namespace zlFilter {
                 std::array<double, 3> res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
-                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
-                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+                ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
             }
             if (trial == 20) {
                 ws = _ws;
@@ -146,10 +146,10 @@ namespace zlFilter {
                 std::array<double, 3> res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
-                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
-                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+                ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
             }
             const auto b = get_ab(B);
             return {a[0], a[1], a[2], b[0], b[1], b[2]};
@@ -158,22 +158,22 @@ namespace zlFilter {
 
     std::array<double, 6> MartinCoeff::get2Notch(const double w0, const double q) {
         std::array<double, 3> b{};
-        if (w0 < pi) {
+        if (w0 < kPi) {
             b = {1, -2 * std::cos(w0), 1};
         } else {
             b = {1, -2 * std::sinh(w0), 1};
         }
         const auto B = get_AB(b);
 
-        const auto _w = get_bandwidth(w0, q);
+        const auto _w = getBandwidth(w0, q);
         const auto w1 = _w[0], w2 = _w[1];
-        const std::array<double, 3> ws{0, w1, w2 < pi ? w2 : 0.5 * (w0 + w1)};
+        const std::array<double, 3> ws{0, w1, w2 < kPi ? w2 : 0.5 * (w0 + w1)};
 
         std::array<std::array<double, 3>, 3> phi{};
         std::array<double, 3> res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
-            res[i] = dot_product(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
+            res[i] = dotProduct(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
         }
 
         const auto A = linear_solve(phi, res);
@@ -186,7 +186,7 @@ namespace zlFilter {
         const auto A = get_AB(a);
         const auto phi0 = get_phi(w0);
 
-        const auto R1 = dot_product(A, phi0) * std::pow(g, 2);
+        const auto R1 = dotProduct(A, phi0) * std::pow(g, 2);
         const auto R2 = (-A[0] + A[1] + 4 * (phi0[0] - phi0[1]) * A[2]) * std::pow(g, 2);
 
         std::array<double, 3> B{A[0], 0, 0};
@@ -222,10 +222,10 @@ namespace zlFilter {
             } else {
                 const auto w1 = std::sqrt((-c1 + delta) / 2 / c2);
                 const auto w2 = std::sqrt((-c1 - delta) / 2 / c2);
-                if (w1 < pi || w2 < pi) {
-                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), pi)};
+                if (w1 < kPi || w2 < kPi) {
+                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), kPi)};
                 } else {
-                    ws = {0, piHalf, pi};
+                    ws = {0, kPiHalf, kPi};
                 }
             }
         }
@@ -238,10 +238,10 @@ namespace zlFilter {
             std::array<double, 3> res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
-            ws[2] = 0.5 * (ws[2] + pi);
+            ws[2] = 0.5 * (ws[2] + kPi);
         }
         if (trial == 20) {
             ws = _ws;
@@ -249,10 +249,10 @@ namespace zlFilter {
             std::array<double, 3> res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
-            ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+            ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
         }
         const auto b = get_ab(B);
         if (reverse_ab) {

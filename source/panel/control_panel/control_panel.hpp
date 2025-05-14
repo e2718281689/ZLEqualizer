@@ -15,13 +15,13 @@
 #include "right_control_panel/right_control_panel.hpp"
 #include "match_control_panel/match_control_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ControlPanel final : public juce::Component,
                                private juce::AudioProcessorValueTreeState::Listener,
                                private juce::AsyncUpdater {
     public:
         explicit ControlPanel(PluginProcessor &p,
-                              zlInterface::UIBase &base);
+                              zlgui::UIBase &base);
 
         ~ControlPanel() override;
 
@@ -30,17 +30,17 @@ namespace zlPanel {
         void paint(juce::Graphics &g) override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef;
-        juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        std::atomic<size_t> bandIdx{0};
-        std::array<std::atomic<bool>, zlState::bandNUM> dynamicON{};
-        LeftControlPanel leftControlPanel;
-        RightControlPanel rightControlPanel;
-        MatchControlPanel matchControlPanel;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
+        zlgui::UIBase &ui_base_;
+        std::atomic<size_t> band_idx_{0};
+        std::array<std::atomic<bool>, zlstate::kBandNUM> dynamic_on_{};
+        LeftControlPanel left_control_panel_;
+        RightControlPanel right_control_panel_;
+        MatchControlPanel match_control_panel_;
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void handleAsyncUpdate() override;
     };
-} // zlPanel
+} // zlpanel
